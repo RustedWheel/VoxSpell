@@ -19,6 +19,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.JComboBox;
 
 @SuppressWarnings("serial")
 public class Spelling_Aid extends JFrame{
@@ -30,7 +31,7 @@ public class Spelling_Aid extends JFrame{
 	private JTextArea txtOutput = new JTextArea(10, 20);
 	private Quiz _quiz;
 	private Statistics _statistics;
-	
+
 	private String[] levels = { "Level 1", "Level 2", "Level 3", "Level 4", "Level 5", "Level 6",
 			"Level 7", "Level 8", "Level 9", "Level 10", "Level 11" };
 	private JComboBox selectLV = new JComboBox(levels);
@@ -66,6 +67,7 @@ public class Spelling_Aid extends JFrame{
 		// Creates a list of commands for the SwingWorker to execute
 		for (String text : texts) {
 			commands.add("echo " + "\"" + text + "\" | festival --tts");
+			System.out.println(text);
 		}
 		// Creates a new SwingWorker and executes the commands
 		Speaker worker = new Speaker(commands);
@@ -138,16 +140,16 @@ public class Spelling_Aid extends JFrame{
 		return results;
 
 	}
-	
+
 	public ArrayList<String> readLevel(File file, int level) {
 
 		ArrayList<String> results = new ArrayList<String>();
 
 		int next = level + 1;
-		
+
 		String levelString = "%Level " + level;
 		String nextLevel = "%Level " + next;
-		
+
 		try{
 
 			FileReader fr = new FileReader(file);
@@ -156,9 +158,9 @@ public class Spelling_Aid extends JFrame{
 			String line;
 			while ((line = br.readLine()) != null && !line.equals(levelString)) {
 			}
-			
+
 			line = br.readLine();
-			
+
 			while (line != null) {
 				if (line.equals(nextLevel)) {
 					break;
@@ -166,7 +168,7 @@ public class Spelling_Aid extends JFrame{
 				results.add(line);
 				line = br.readLine();
 			}
-			
+
 			br.close();
 			fr.close();
 
@@ -182,29 +184,29 @@ public class Spelling_Aid extends JFrame{
 		super("Spelling Aid");
 		setSize(400, 400);
 		GridLayout layout = new GridLayout(2,2);
-		
+
 		JPanel menu = new JPanel();
 		menu.setLayout(layout);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		
+
 		selectLV.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				JComboBox lv = (JComboBox)evt.getSource();
 				String selectedlv = (String) lv.getSelectedItem();
 				String[] level = selectedlv.split(" ");
-		        _level = Integer.parseInt(level[1]);
+				_level = Integer.parseInt(level[1]);
 			}
 		});
-		
+
 		quiz.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
+
 				JOptionPane.showMessageDialog( null, selectLV, "Please select a level", JOptionPane.QUESTION_MESSAGE);
-				
+
 				// Starts a new quiz and hides the main menu
-				_quiz = new Quiz(Quiz.quizType.QUIZ, Spelling_Aid.this);
+				_quiz = new Quiz(Quiz.quizType.QUIZ, Spelling_Aid.this, _level);
 				setVisible(false);
 				_quiz.startQuiz();
 			}
@@ -215,7 +217,7 @@ public class Spelling_Aid extends JFrame{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// Starts a new review and hides the main menu
-				_quiz = new Quiz(Quiz.quizType.REVIEW, Spelling_Aid.this);
+				_quiz = new Quiz(Quiz.quizType.REVIEW, Spelling_Aid.this, 0);
 				setVisible(false);
 				_quiz.startQuiz();
 

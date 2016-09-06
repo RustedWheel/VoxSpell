@@ -9,10 +9,10 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
@@ -29,6 +29,8 @@ public class Quiz{
 	private JButton restart = new JButton("Restart");
 	protected JButton submit = new JButton("Submit");
 	private JButton close = new JButton("Main menu");
+	private JButton nextLevel = new JButton("Next level");
+	private JButton videoReward = new JButton("Reward");
 	private JTextArea output = new JTextArea();
 	private String currentWord = "";
 	protected int attempts;
@@ -37,14 +39,16 @@ public class Quiz{
 	private int size;
 	private int testNum;
 	private JFrame frame;
-	private File wordlist;
+	private int numberCorrect;
 	private ArrayList<String> previousCorrect = new ArrayList<String>();
+	private int _level;
 
 
-	public Quiz(quizType type, Spelling_Aid spelling_Aid) {
+	public Quiz(quizType type, Spelling_Aid spelling_Aid, int level) {
 
 		_type = type;
 		_spelling_Aid = spelling_Aid;
+		_level = level;
 
 	}
 
@@ -62,34 +66,9 @@ public class Quiz{
 
 		switch (_type) {
 		case QUIZ:
-			// If the current wordlist has not already been selected, then it prompts the
-			// to select a wordlist file that contains the list of words to test
-			// This wordlist file is saved for all future tests of this quiz instance
-			if (wordlist == null) {
-				JOptionPane.showMessageDialog(new JFrame(), "Please select your wordlist", "Select Wordlist",
-						JOptionPane.INFORMATION_MESSAGE);
-				JFileChooser fileChooser = new JFileChooser();
-				fileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
-				int result = fileChooser.showOpenDialog(frame);
-				if (result == JFileChooser.APPROVE_OPTION) {
-					wordlist = fileChooser.getSelectedFile();
-					// If the file chosen is not called "wordlist", then an error message is displayed and the user is sent back
-					// to the main menu
-					if (!wordlist.getName().equals("wordlist")) {
-						JOptionPane.showMessageDialog(new JFrame(), "Error, the wordlist must be named \"wordlist\"", "Error",
-								JOptionPane.ERROR_MESSAGE);
-						_spelling_Aid.setVisible(true);
-						return;
-					}
-					words = _spelling_Aid.readList(wordlist);
-				} else {
-					JOptionPane.showMessageDialog(new JFrame(), "Cancelled selection", "Cancelled",
-							JOptionPane.INFORMATION_MESSAGE);
-					_spelling_Aid.setVisible(true);
-					return;
-				}
 
-			}
+			words = _spelling_Aid.readLevel(new File("NZCER-spelling-lists.txt"), _level);
+
 			break;
 
 		case REVIEW:
@@ -126,9 +105,10 @@ public class Quiz{
 
 			// Determines the number of words to be quizzed, which is either
 			// 3 or the number of words in the list, if the list has less than 3 words
-			size = (words.size() > 2) ? 3 : words.size();
+			size = 10;
 			previousWords = new ArrayList<String>();
 
+			numberCorrect = 0;
 			testNum = 1;
 
 			test();
@@ -173,6 +153,14 @@ public class Quiz{
 			// Once the quiz is done, then the restart button is enabled
 			_spelling_Aid.textToSpeech(previousCorrect);
 			previousCorrect.clear();
+
+			if (numberCorrect < 9) {
+				JOptionPane.showMessageDialog(new JFrame(), "You have gotten " + numberCorrect + " words correct out of 10, please press restart to try again", "Failure",
+						JOptionPane.ERROR_MESSAGE);
+			} else {
+				JOptionPane.showMessageDialog(new JFrame(), "You have gotten " + numberCorrect + " words correct out of 10, you may proceed to the next level", "Pass",
+						JOptionPane.INFORMATION_MESSAGE);
+			}
 			restart.setEnabled(true);
 			output.append("\nQuiz complete.\nPress Restart to start another quiz\nPress Main menu to exit\n");
 		}
@@ -232,7 +220,7 @@ public class Quiz{
 					} else {
 						// Once they fail two times, the word is considered failed
 						previousCorrect.add("Incorrect");
-						
+
 						output.append("Incorrect\n");
 						_spelling_Aid.appendList(currentWord, attempts, false);
 
@@ -241,7 +229,7 @@ public class Quiz{
 						if (_type == quizType.REVIEW) {
 							_spelling_Aid.textToSpeech(previousCorrect);
 							previousCorrect.clear();
-							
+
 							int choice = JOptionPane.showConfirmDialog(null, "Would you like to hear the spelling of the word and try again?", "Retry?", JOptionPane.YES_NO_OPTION);
 
 							if (choice == JOptionPane.YES_OPTION) {
@@ -264,7 +252,7 @@ public class Quiz{
 										output.append("Incorrect\n");
 
 									}
-									
+
 									attempts--;
 
 								}
@@ -277,6 +265,7 @@ public class Quiz{
 				// If the user correctly spells a word, it is removed from their failed list
 				if (correct) {
 					_spelling_Aid.removeWord(currentWord);
+					numberCorrect++;
 				}
 
 				// Clears the JTextField
@@ -347,6 +336,8 @@ public class Quiz{
 		// Disables editing of the JTextArea
 		output.setEditable(false);
 		output.setLineWrap(true);
+		
+		JScrollPane scroll = new JScrollPane(output);
 
 		input.setPreferredSize(new Dimension(250,30));
 
@@ -356,11 +347,13 @@ public class Quiz{
 
 		options.add(close,JPanel.LEFT_ALIGNMENT);
 		options.add(restart,JPanel.RIGHT_ALIGNMENT);
-
+		options.add(nextLevel);
+		options.add(videoReward);
+		
 		restart.setEnabled(false);
 
 		frame.add(panel, BorderLayout.NORTH);
-		frame.add(output,BorderLayout.CENTER);
+		frame.add(scroll,BorderLayout.CENTER);
 		frame.add(options,BorderLayout.SOUTH);
 
 	}
