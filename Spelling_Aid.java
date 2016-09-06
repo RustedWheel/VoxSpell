@@ -133,6 +133,45 @@ public class Spelling_Aid extends JFrame{
 		return results;
 
 	}
+	
+	public ArrayList<String> readLevel(File file, int level) {
+
+		ArrayList<String> results = new ArrayList<String>();
+
+		int next = level + 1;
+		
+		String levelString = "%Level " + level;
+		String nextLevel = "%Level " + next;
+		
+		try{
+
+			FileReader fr = new FileReader(file);
+			BufferedReader br = new BufferedReader(fr);
+
+			String line;
+			while ((line = br.readLine()) != null && !line.equals(levelString)) {
+			}
+			
+			line = br.readLine();
+			
+			while (line != null) {
+				if (line.equals(nextLevel)) {
+					break;
+				}
+				results.add(line);
+				line = br.readLine();
+			}
+			
+			br.close();
+			fr.close();
+
+		} catch (IOException e1) {
+
+		}
+
+		return results;
+
+	}
 
 	public Spelling_Aid() {
 		super("Spelling Aid");
