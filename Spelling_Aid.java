@@ -30,6 +30,11 @@ public class Spelling_Aid extends JFrame{
 	private JTextArea txtOutput = new JTextArea(10, 20);
 	private Quiz _quiz;
 	private Statistics _statistics;
+	
+	private String[] levels = { "1", "2", "3", "4", "5", "6", "5",
+			"7", "8", "9", "10", "11" };
+	private JComboBox selectLV = new JComboBox(levels);
+	private int _level = 1;
 
 	public static void main(String[] Args) {
 		SwingUtilities.invokeLater(new Runnable() {
@@ -181,10 +186,21 @@ public class Spelling_Aid extends JFrame{
 		JPanel menu = new JPanel();
 		menu.setLayout(layout);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		
+		selectLV.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				JComboBox lv = (JComboBox)evt.getSource();
+		        _level = Integer.parseInt((String) lv.getSelectedItem());
+			}
+		});
+		
 		quiz.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				
+				JOptionPane.showMessageDialog( null, selectLV, "Please select a level", JOptionPane.QUESTION_MESSAGE);
+				
 				// Starts a new quiz and hides the main menu
 				_quiz = new Quiz(Quiz.quizType.QUIZ, Spelling_Aid.this);
 				setVisible(false);
