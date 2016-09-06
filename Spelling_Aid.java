@@ -30,6 +30,11 @@ public class Spelling_Aid extends JFrame{
 	private JTextArea txtOutput = new JTextArea(10, 20);
 	private Quiz _quiz;
 	private Statistics _statistics;
+	
+	private String[] levels = { "Level 1", "Level 2", "Level 3", "Level 4", "Level 5", "Level 6",
+			"Level 7", "Level 8", "Level 9", "Level 10", "Level 11" };
+	private JComboBox selectLV = new JComboBox(levels);
+	private int _level = 1;
 
 	public static void main(String[] Args) {
 		SwingUtilities.invokeLater(new Runnable() {
@@ -133,6 +138,45 @@ public class Spelling_Aid extends JFrame{
 		return results;
 
 	}
+	
+	public ArrayList<String> readLevel(File file, int level) {
+
+		ArrayList<String> results = new ArrayList<String>();
+
+		int next = level + 1;
+		
+		String levelString = "%Level " + level;
+		String nextLevel = "%Level " + next;
+		
+		try{
+
+			FileReader fr = new FileReader(file);
+			BufferedReader br = new BufferedReader(fr);
+
+			String line;
+			while ((line = br.readLine()) != null && !line.equals(levelString)) {
+			}
+			
+			line = br.readLine();
+			
+			while (line != null) {
+				if (line.equals(nextLevel)) {
+					break;
+				}
+				results.add(line);
+				line = br.readLine();
+			}
+			
+			br.close();
+			fr.close();
+
+		} catch (IOException e1) {
+
+		}
+
+		return results;
+
+	}
 
 	public Spelling_Aid() {
 		super("Spelling Aid");
@@ -142,10 +186,23 @@ public class Spelling_Aid extends JFrame{
 		JPanel menu = new JPanel();
 		menu.setLayout(layout);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		
+		selectLV.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				JComboBox lv = (JComboBox)evt.getSource();
+				String selectedlv = (String) lv.getSelectedItem();
+				String[] level = selectedlv.split(" ");
+		        _level = Integer.parseInt(level[1]);
+			}
+		});
+		
 		quiz.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				
+				JOptionPane.showMessageDialog( null, selectLV, "Please select a level", JOptionPane.QUESTION_MESSAGE);
+				
 				// Starts a new quiz and hides the main menu
 				_quiz = new Quiz(Quiz.quizType.QUIZ, Spelling_Aid.this);
 				setVisible(false);
