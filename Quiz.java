@@ -10,17 +10,17 @@ import java.util.Random;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-public class Quiz{
+public class Quiz {
 
 	public enum quizType {
-		QUIZ,
-		REVIEW;
+		QUIZ, REVIEW;
 	}
 
 	private quizType _type;
@@ -41,8 +41,9 @@ public class Quiz{
 	protected JFrame frame;
 	private int numberCorrect;
 	private ArrayList<String> previousCorrect = new ArrayList<String>();
-	private int _level;
 
+	private int _level;
+	private JLabel levelStats = new JLabel();
 
 	public Quiz(quizType type, Spelling_Aid spelling_Aid, int level) {
 
@@ -54,9 +55,10 @@ public class Quiz{
 
 	/**
 	 * This method creates the JFrame that contains the quiz GUI if it does not
-	 * already exist, prompts the user for a wordlist and then reads that list and
-	 * starts the quiz. An error message is shown if the wordlist file is not called
-	 * "wordlist" when in quiz mode or if the wordlist files are empty
+	 * already exist, prompts the user for a wordlist and then reads that list
+	 * and starts the quiz. An error message is shown if the wordlist file is
+	 * not called "wordlist" when in quiz mode or if the wordlist files are
+	 * empty
 	 */
 	public void startQuiz() {
 
@@ -66,7 +68,7 @@ public class Quiz{
 
 		switch (_type) {
 		case QUIZ:
-			
+
 			words = _spelling_Aid.readLevel(new File("NZCER-spelling-lists.txt"), _level);
 
 			break;
@@ -98,13 +100,14 @@ public class Quiz{
 			if (_type == quizType.REVIEW) {
 				output.setText("Welcome to the review!\n\n");
 			} else {
-				output.setText("Welcome to level " + _level +  " of the quiz!\n\n");
+				output.setText("Welcome to level " + _level + " of the quiz!\n\n");
 			}
 
 			frame.setVisible(true);
 
 			// Determines the number of words to be quizzed, which is either
-			// 3 or the number of words in the list, if the list has less than 3 words
+			// 3 or the number of words in the list, if the list has less than 3
+			// words
 			size = 10;
 			previousWords = new ArrayList<String>();
 
@@ -113,16 +116,14 @@ public class Quiz{
 
 			test();
 
-
-
 		}
 
 	}
 
 	/**
-	 * This method randomly selects a word from the wordlist that has not already
-	 * been tested in the current quiz uses textToSpeech to speak out the word for
-	 * the user to spell
+	 * This method randomly selects a word from the wordlist that has not
+	 * already been tested in the current quiz uses textToSpeech to speak out
+	 * the word for the user to spell
 	 */
 	private void test() {
 
@@ -138,7 +139,8 @@ public class Quiz{
 				wordNumber = (Math.abs(rand.nextInt()) % words.size());
 				currentWord = words.get(wordNumber);
 			}
-			// Adds the current word to the list of quizzed words, so that it cannot
+			// Adds the current word to the list of quizzed words, so that it
+			// cannot
 			// be selected again
 			previousWords.add(currentWord);
 
@@ -155,14 +157,27 @@ public class Quiz{
 			previousCorrect.clear();
 
 			if (numberCorrect < 9) {
-				JOptionPane.showMessageDialog(new JFrame(), "You have gotten " + numberCorrect + " words correct out of 10, please press restart to try again", "Failure",
-						JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(new JFrame(),
+						"You have gotten " + numberCorrect
+								+ " words correct out of 10, please press restart to try again",
+						"Failure", JOptionPane.ERROR_MESSAGE);
+
+				_spelling_Aid.appendList(Integer.toString(_level), 2, false);
+
 			} else {
-				JOptionPane.showMessageDialog(new JFrame(), "You have gotten " + numberCorrect + " words correct out of 10, you may choose to play a video reward, or proceed directly to the next level", "Pass",
-						JOptionPane.INFORMATION_MESSAGE);
+				JOptionPane.showMessageDialog(new JFrame(),
+						"You have gotten " + numberCorrect
+								+ " words correct out of 10, you may choose to play a video reward, or proceed directly to the next level",
+						"Pass", JOptionPane.INFORMATION_MESSAGE);
+
+				_spelling_Aid.appendList(Integer.toString(_level), 1, true);
+
 				videoReward.setEnabled(true);
 				nextLevel.setEnabled(true);
 			}
+			
+			updateLevelResult(LevelStats());
+			
 			restart.setEnabled(true);
 			output.append("\nQuiz complete.\nPress Restart to start another quiz\nPress Main menu to exit\n");
 		}
@@ -170,22 +185,22 @@ public class Quiz{
 	}
 
 	/**
-	 * This method creates the JFrame to display the quiz on and also sets up the buttons
-	 * with their ActionListeners
+	 * This method creates the JFrame to display the quiz on and also sets up
+	 * the buttons with their ActionListeners
 	 */
 	private void setUp() {
 
 		if (_type == quizType.QUIZ) {
 			frame = new JFrame("Quiz");
-		}
-		else {
+		} else {
 			frame = new JFrame("Review");
 		}
 
-		frame.setSize(400,400);
+		frame.setSize(400, 400);
 		frame.setLocationRelativeTo(null);
 
-		// The quiz JFrame is disposed and the main menu is unhidden once the user
+		// The quiz JFrame is disposed and the main menu is unhidden once the
+		// user
 		// chooses to go back
 		close.addActionListener(new ActionListener() {
 
@@ -202,16 +217,18 @@ public class Quiz{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				submit.setEnabled(false);
-				// Checks that the user's input in the JTextField is spelled correctly
+				// Checks that the user's input in the JTextField is spelled
+				// correctly
 				boolean correct = spellcheck(input.getText());
 
-				if(correct) {
+				if (correct) {
 					previousCorrect.add("Correct");
 					output.append("Correct\n");
 					_spelling_Aid.appendList(currentWord, attempts, true);
 				} else {
 					if (attempts == 1) {
-						// If they have one failed attempt, then they are allowed to spell the word again
+						// If they have one failed attempt, then they are
+						// allowed to spell the word again
 						ArrayList<String> text = new ArrayList<String>();
 						text.add("Incorrect, please try again");
 						output.append("Incorrect, please try again\n");
@@ -220,19 +237,24 @@ public class Quiz{
 						_spelling_Aid.textToSpeech(text);
 
 					} else {
-						// Once they fail two times, the word is considered failed
+						// Once they fail two times, the word is considered
+						// failed
 						previousCorrect.add("Incorrect");
 
 						output.append("Incorrect\n");
 						_spelling_Aid.appendList(currentWord, attempts, false);
 
-						// If the user is in review mode, they are given an opportunity to hear the
-						// word being spelled out and then allowed to spell it again
+						// If the user is in review mode, they are given an
+						// opportunity to hear the
+						// word being spelled out and then allowed to spell it
+						// again
 						if (_type == quizType.REVIEW) {
 							_spelling_Aid.textToSpeech(previousCorrect);
 							previousCorrect.clear();
 
-							int choice = JOptionPane.showConfirmDialog(null, "Would you like to hear the spelling of the word and try again?", "Retry?", JOptionPane.YES_NO_OPTION);
+							int choice = JOptionPane.showConfirmDialog(null,
+									"Would you like to hear the spelling of the word and try again?", "Retry?",
+									JOptionPane.YES_NO_OPTION);
 
 							if (choice == JOptionPane.YES_OPTION) {
 
@@ -264,7 +286,8 @@ public class Quiz{
 					}
 				}
 
-				// If the user correctly spells a word, it is removed from their failed list
+				// If the user correctly spells a word, it is removed from their
+				// failed list
 				if (correct) {
 					_spelling_Aid.removeWord(currentWord);
 					numberCorrect++;
@@ -273,7 +296,8 @@ public class Quiz{
 				// Clears the JTextField
 				input.setText("");
 
-				// Goes to the next word once the user gets the current word correct
+				// Goes to the next word once the user gets the current word
+				// correct
 				// or fails twice
 				if (correct || attempts == 2) {
 					testNum++;
@@ -331,7 +355,7 @@ public class Quiz{
 			}
 
 		});
-		
+
 		videoReward.addActionListener(new ActionListener() {
 
 			@Override
@@ -340,9 +364,9 @@ public class Quiz{
 				VideoPlayer video = new VideoPlayer(Quiz.this);
 				frame.setVisible(false);
 			}
-			
+
 		});
-		
+
 		nextLevel.addActionListener(new ActionListener() {
 
 			@Override
@@ -350,11 +374,12 @@ public class Quiz{
 				nextLevel.setEnabled(false);
 				videoReward.setEnabled(false);
 				restart.setEnabled(false);
-				
+
 				_level++;
+				updateLevelResult(LevelStats());
 				startQuiz();
 			}
-			
+
 		});
 
 		frame.setResizable(false);
@@ -365,40 +390,85 @@ public class Quiz{
 		// Disables editing of the JTextArea
 		output.setEditable(false);
 		output.setLineWrap(true);
-		
+
 		JScrollPane scroll = new JScrollPane(output);
 
-		input.setPreferredSize(new Dimension(250,30));
+		input.setPreferredSize(new Dimension(250, 30));
 
 		submit.setEnabled(false);
+
+		if (_type.equals(quizType.QUIZ)) {
+			panel.add(levelStats, JPanel.TOP_ALIGNMENT);
+			updateLevelResult(LevelStats());
+		}
+
 		panel.add(input, JPanel.LEFT_ALIGNMENT);
 		panel.add(submit, JPanel.RIGHT_ALIGNMENT);
 
-		options.add(close,JPanel.LEFT_ALIGNMENT);
-		options.add(restart,JPanel.RIGHT_ALIGNMENT);
+		options.add(close, JPanel.LEFT_ALIGNMENT);
+		options.add(restart, JPanel.RIGHT_ALIGNMENT);
 		options.add(nextLevel);
 		options.add(videoReward);
-		
+
 		nextLevel.setEnabled(false);
 		videoReward.setEnabled(false);
 		restart.setEnabled(false);
 
 		frame.add(panel, BorderLayout.NORTH);
-		frame.add(scroll,BorderLayout.CENTER);
-		frame.add(options,BorderLayout.SOUTH);
+		frame.add(scroll, BorderLayout.CENTER);
+		frame.add(options, BorderLayout.SOUTH);
 
 	}
 
 	/**
 	 * This method returns a boolean that represents if the user correctly
-	 * spelled a word, and also increments the number of attempts that the
-	 * user has used
-	 * @param text The user's attempt at the current word
+	 * spelled a word, and also increments the number of attempts that the user
+	 * has used
+	 * 
+	 * @param text
+	 *            The user's attempt at the current word
 	 * @return
 	 */
 	protected boolean spellcheck(String text) {
 		attempts++;
 		return text.equals(currentWord);
+	}
+
+	private int[] LevelStats() {
+
+		ArrayList<String> results = _spelling_Aid.readList(new File(".results"));
+		int[] levelResult = new int[2];
+
+		for (String result : results) {
+			String[] split = result.split(" ");
+
+			if (split[0].matches(".*\\d+.*")) {
+
+				if (Integer.parseInt(split[0]) == (_level)) {
+
+					switch (split[1]) {
+					case "mastered":
+						levelResult[0]++;
+						break;
+
+					case "failed":
+						levelResult[1]++;
+						break;
+					}
+				}
+
+			}
+		}
+
+		return levelResult;
+	}
+
+	private void updateLevelResult(int[] levelResult) {
+		if(_type.equals(quizType.QUIZ)){
+			int total = levelResult[0] + levelResult[1];
+			levelStats.setText("Level " + _level + ":  " + "mastered - " + levelResult[0] + "/" + total
+					+ "  failed - " + levelResult[1] + "/" + total);
+		}
 	}
 
 }
