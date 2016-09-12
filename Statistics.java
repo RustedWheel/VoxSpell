@@ -112,34 +112,41 @@ public class Statistics{
 
 			for (String result : results) {
 				String[] split = result.split(" ");
+				
+				if(!split[0].matches(".*\\d+.*")){
+					
+					
+					// If the HashMap does not contain the current word, add it along with a [0,0,0] array
+					if (!stats.containsKey(split[0])) {
+						words.add(split[0]);
+						Integer[] blank = new Integer[3];
 
-				// If the HashMap does not contain the current word, add it along with a [0,0,0] array
-				if (!stats.containsKey(split[0])) {
-					words.add(split[0]);
-					Integer[] blank = new Integer[3];
+						for (int i = 0; i < 3; i++) {
+							blank[i] = 0;
+						}
 
-					for (int i = 0; i < 3; i++) {
-						blank[i] = 0;
+						stats.put(split[0], blank);
 					}
 
-					stats.put(split[0], blank);
+					// Add 1 to the integer array depending on the user's grade for that particular word
+					switch (split[1]) {
+					case "mastered" :
+						stats.get(split[0])[0]++;
+						break;
+
+					case "faulted" :
+						stats.get(split[0])[1]++;
+						break;
+
+					case "failed" :
+						stats.get(split[0])[2]++;
+						break;
+
+					}
+					
+					
 				}
-
-				// Add 1 to the integer array depending on the user's grade for that particular word
-				switch (split[1]) {
-				case "mastered" :
-					stats.get(split[0])[0]++;
-					break;
-
-				case "faulted" :
-					stats.get(split[0])[1]++;
-					break;
-
-				case "failed" :
-					stats.get(split[0])[2]++;
-					break;
-
-				}
+				
 			}
 
 			// Sorts the words alphabetically
