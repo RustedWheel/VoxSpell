@@ -310,7 +310,7 @@ public class Spelling_Aid extends JFrame{
 	 * @param attempts How many attempts the user had on the currentWord
 	 * @param correct A boolean value representing if the user correctly spelled the word
 	 */
-	public void appendList(String currentWord, int attempts, boolean correct) {
+	public void appendList(int level, int score) {
 
 		BufferedWriter bw = null;
 
@@ -318,7 +318,7 @@ public class Spelling_Aid extends JFrame{
 			// Opens the .results file for appending
 			bw = new BufferedWriter(new FileWriter(".results", true));
 
-			// If they answered correctly in 1 attempt then that word is mastered
+			/*// If they answered correctly in 1 attempt then that word is mastered
 			if (attempts == 1) {
 				bw.write(currentWord + " mastered");
 				bw.newLine();
@@ -332,8 +332,11 @@ public class Spelling_Aid extends JFrame{
 				bw.write(currentWord + " failed");
 				bw.newLine();
 				appendFailed(currentWord);
-			}
+			}*/
 
+			bw.write("Level" + level + " " + score);
+			bw.newLine();
+			
 		} catch (IOException e) {
 
 		} finally {
@@ -352,15 +355,15 @@ public class Spelling_Aid extends JFrame{
 	 * on the failed file
 	 * @param currentWord The word to append to the failed file
 	 */
-	private void appendFailed(String currentWord) {
-
+	public void appendFailed(String currentWord, int level) {
 		ArrayList<String> failed = readList(new File(".failed"));
 
 		// If the failed list does not contain the word to be added, then it is added
 		if (!failed.contains(currentWord)) {
 
 			BufferedWriter bw = null;
-
+			
+			currentWord = currentWord + "	" + level;
 			try {
 				bw = new BufferedWriter(new FileWriter(".failed", true));
 				bw.write(currentWord);
