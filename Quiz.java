@@ -49,7 +49,6 @@ public class Quiz {
 	protected JFrame frame;
 	private int numberCorrect;
 	private ArrayList<String> previousCorrect = new ArrayList<String>();
-	private static DecimalFormat df = new DecimalFormat(".#");
 
 	private int _level;
 	private JLabel levelStats = new JLabel();
@@ -79,7 +78,7 @@ public class Quiz {
 		case QUIZ:
 
 			words = _spelling_Aid.readLevel(new File("NZCER-spelling-lists.txt"), _level);
-
+			
 			break;
 
 		case REVIEW:
@@ -87,7 +86,7 @@ public class Quiz {
 			words = _spelling_Aid.readList(new File(".failed"));
 			break;
 		}
-
+		
 		// Displays an error message if the file is empty
 		if (words.isEmpty()) {
 			switch (_type) {
@@ -121,8 +120,9 @@ public class Quiz {
 			previousWords = new ArrayList<String>();
 
 			numberCorrect = 0;
+			testNum = 0;
+			updateLevelResult();
 			testNum = 1;
-
 			test();
 
 		}
@@ -188,8 +188,6 @@ public class Quiz {
 				videoReward.setEnabled(true);
 				nextLevel.setEnabled(true);
 			}
-
-			updateLevelResult(LevelStats());
 
 			restart.setEnabled(true);
 			output.append("\nQuiz complete.\nPress Restart to start another quiz\nPress Main menu to exit\n");
@@ -305,7 +303,7 @@ public class Quiz {
 					_spelling_Aid.removeWord(currentWord);
 					numberCorrect++;
 				}
-
+				
 				// Clears the JTextField
 				input.setText("");
 
@@ -313,9 +311,11 @@ public class Quiz {
 				// correct
 				// or fails twice
 				if (correct || attempts == 2) {
+					updateLevelResult();
 					testNum++;
 					test();
 				}
+				
 			}
 
 		});
@@ -389,7 +389,6 @@ public class Quiz {
 				restart.setEnabled(false);
 
 				_level++;
-				updateLevelResult(LevelStats());
 				startQuiz();
 			}
 
@@ -412,7 +411,6 @@ public class Quiz {
 
 		if (_type.equals(quizType.QUIZ)) {
 			panel.add(levelStats, BorderLayout.NORTH);
-			updateLevelResult(LevelStats());
 		}
 
 		panel.add(input, BorderLayout.CENTER);
@@ -476,7 +474,7 @@ public class Quiz {
 		return text.equals(currentWord.toLowerCase());
 	}
 
-	private int[] LevelStats() {
+/*	private int[] LevelStats() {
 
 		ArrayList<String> results = _spelling_Aid.readList(new File(".results"));
 		int[] levelResult = new int[3];
@@ -495,7 +493,7 @@ public class Quiz {
 				}
 				
 				levelResult[2] = levelResult[2] + score;
-/*				switch (score) {
+				switch (score) {
 				case :
 					levelResult[0]++;
 					break;
@@ -503,25 +501,24 @@ public class Quiz {
 				case "failed":
 					levelResult[1]++;
 					break;
-				}*/
+				}
 
 			}
 		}
 
 		return levelResult;
-	}
+	}*/
 
-	private void updateLevelResult(int[] levelResult) {
+	private void updateLevelResult() {
 		if (_type.equals(quizType.QUIZ)) {
-			int total = levelResult[0] + levelResult[1];
-			double average = 0;
+/*			double average = 0;
 			
 			if(total > 0){
 				average = (double) levelResult[2] / total;
-			}
+			}*/
 			
-			levelStats.setText("Level " + _level + ":  " + "mastered - " + levelResult[0] + "/" + total + "  failed - "
-					+ levelResult[1] + "/" + total + "  Average Score - " + df.format(average));
+			levelStats.setText("Level " + _level + ":  " + "Correct - " + numberCorrect + "/" + testNum + "  Incorrect - "
+					+ (testNum - numberCorrect) + "/" + testNum);
 		}
 	}
 

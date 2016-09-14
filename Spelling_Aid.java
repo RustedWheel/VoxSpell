@@ -2,6 +2,8 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -201,6 +203,38 @@ public class Spelling_Aid extends JFrame {
 		JPanel menu = new JPanel();
 		menu.setLayout(layout);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		
+		addWindowListener(new WindowListener() {
+
+			@Override
+			public void windowOpened(WindowEvent e) {
+			}
+
+			@Override
+			public void windowClosing(WindowEvent e) {
+				bashCommand("> ~/.festivalrc");
+			}
+
+			@Override
+			public void windowClosed(WindowEvent e) {
+			}
+
+			@Override
+			public void windowIconified(WindowEvent e) {
+			}
+
+			@Override
+			public void windowDeiconified(WindowEvent e) {
+			}
+
+			@Override
+			public void windowActivated(WindowEvent e) {
+			}
+
+			@Override
+			public void windowDeactivated(WindowEvent e) {
+			}
+		});
 
 		selectLV.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
@@ -491,7 +525,13 @@ public class Spelling_Aid extends JFrame {
 	}
 	
 	public void setVoice(String voice){
-		String command = "echo " + "\"(set! voice_default '" + voice + ")\""  + "> ~/.festivalrc";
+		String command = null;
+		if(!voice.contains("clunits") && voice.startsWith("cmu")){
+			command = "echo " + "\"(set! voice_default '" + "voice_" + voice + "_clunits" + ")\""  + "> ~/.festivalrc";
+		} else {
+			command = "echo " + "\"(set! voice_default '" + "voice_" + voice + ")\""  + "> ~/.festivalrc";
+		}
+		
 		bashCommand(command);
 	}
 }
