@@ -4,8 +4,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import javax.swing.JButton;
@@ -70,7 +78,7 @@ public class Quiz {
 		case QUIZ:
 
 			words = _spelling_Aid.readLevel(new File("NZCER-spelling-lists.txt"), _level);
-
+			
 			break;
 
 		case REVIEW:
@@ -78,7 +86,7 @@ public class Quiz {
 			words = _spelling_Aid.readList(new File(".failed"));
 			break;
 		}
-
+		
 		// Displays an error message if the file is empty
 		if (words.isEmpty()) {
 			switch (_type) {
@@ -112,8 +120,9 @@ public class Quiz {
 			previousWords = new ArrayList<String>();
 
 			numberCorrect = 0;
+			testNum = 0;
+			updateLevelResult();
 			testNum = 1;
-
 			test();
 
 		}
@@ -145,8 +154,8 @@ public class Quiz {
 			previousWords.add(currentWord);
 
 			output.append("Please spell word " + testNum + " of " + size + "\n");
-			
-			if(currentWord.contains("'")){
+
+			if (currentWord.contains("'")) {
 				output.append("The one with an apostrophe." + "\n");
 			}
 
@@ -166,7 +175,7 @@ public class Quiz {
 								+ " words correct out of 10, please press restart to try again",
 						"Failure", JOptionPane.ERROR_MESSAGE);
 
-				_spelling_Aid.appendList(Integer.toString(_level), 2, false);
+				_spelling_Aid.appendList(_level, numberCorrect);
 
 			} else {
 				JOptionPane.showMessageDialog(new JFrame(),
@@ -174,14 +183,12 @@ public class Quiz {
 								+ " words correct out of 10, you may choose to play a video reward, or proceed directly to the next level",
 						"Pass", JOptionPane.INFORMATION_MESSAGE);
 
-				_spelling_Aid.appendList(Integer.toString(_level), 1, true);
+				_spelling_Aid.appendList(_level, numberCorrect);
 
 				videoReward.setEnabled(true);
 				nextLevel.setEnabled(true);
 			}
-			
-			updateLevelResult(LevelStats());
-			
+
 			restart.setEnabled(true);
 			output.append("\nQuiz complete.\nPress Restart to start another quiz\nPress Main menu to exit\n");
 		}
@@ -228,7 +235,7 @@ public class Quiz {
 				if (correct) {
 					previousCorrect.add("Correct");
 					output.append("Correct\n");
-					_spelling_Aid.appendList(currentWord, attempts, true);
+					/* _spelling_Aid.appendList(currentWord, attempts, true); */
 				} else {
 					if (attempts == 1) {
 						// If they have one failed attempt, then they are
@@ -246,7 +253,7 @@ public class Quiz {
 						previousCorrect.add("Incorrect");
 
 						output.append("Incorrect\n");
-						_spelling_Aid.appendList(currentWord, attempts, false);
+						_spelling_Aid.appendFailed(currentWord, _level);
 
 						// If the user is in review mode, they are given an
 						// opportunity to hear the
@@ -296,7 +303,7 @@ public class Quiz {
 					_spelling_Aid.removeWord(currentWord);
 					numberCorrect++;
 				}
-
+				
 				// Clears the JTextField
 				input.setText("");
 
@@ -304,9 +311,11 @@ public class Quiz {
 				// correct
 				// or fails twice
 				if (correct || attempts == 2) {
+					updateLevelResult();
 					testNum++;
 					test();
 				}
+				
 			}
 
 		});
@@ -380,7 +389,6 @@ public class Quiz {
 				restart.setEnabled(false);
 
 				_level++;
-				updateLevelResult(LevelStats());
 				startQuiz();
 			}
 
@@ -403,7 +411,6 @@ public class Quiz {
 
 		if (_type.equals(quizType.QUIZ)) {
 			panel.add(levelStats, BorderLayout.NORTH);
-			updateLevelResult(LevelStats());
 		}
 
 		panel.add(input, BorderLayout.CENTER);
@@ -415,12 +422,41 @@ public class Quiz {
 		options.add(videoReward);
 
 		nextLevel.setEnabled(false);
-		videoReward.setEnabled(false);
+		//videoReward.setEnabled(false);
 		restart.setEnabled(false);
 
 		frame.add(panel, BorderLayout.NORTH);
 		frame.add(scroll, BorderLayout.CENTER);
 		frame.add(options, BorderLayout.SOUTH);
+
+		/*
+		 * List<String> commandLine = new ArrayList<String>();
+		 * commandLine.add("festival"); commandLine.add("(voice.list)");
+		 * commandLine.add("(quit)");
+		 * 
+		 * ProcessBuilder builder = new ProcessBuilder(commandLine);
+		 * builder.redirectErrorStream(true);
+		 * 
+		 * try { Process b = builder.start(); OutputStream os =
+		 * b.getOutputStream(); InputStream is = b.getInputStream();
+		 * InputStreamReader isr = new InputStreamReader(is); BufferedReader br
+		 * = new BufferedReader(isr);
+		 * 
+		 * String line; while ((line = br.readLine()) != null) {
+		 * output.append(line + "\n"); }
+		 * 
+		 * b.waitFor(); if(b.exitValue() == 0) { BufferedWriter bw = new
+		 * BufferedWriter(new OutputStreamWriter(os));
+		 * bw.write("SELECT * FROM clients;"); bw.newLine(); bw.flush();
+		 * output.append("Content of " + dir + ":\n"); String line; while ((line
+		 * = br.readLine()) != null) { output.append("	" + line + "\n"); }
+		 * output.append("\n"); } else { String message = br.readLine();
+		 * JOptionPane.showMessageDialog(new JFrame(), message, "Message",
+		 * JOptionPane.INFORMATION_MESSAGE); }
+		 * 
+		 * } catch (Exception e) { // TODO Auto-generated catch block
+		 * e.printStackTrace(); }
+		 */
 
 	}
 
@@ -435,43 +471,54 @@ public class Quiz {
 	 */
 	protected boolean spellcheck(String text) {
 		attempts++;
-		return text.equals(currentWord.toLowerCase());
+		return text.toLowerCase().equals(currentWord.toLowerCase());
 	}
 
-	private int[] LevelStats() {
+/*	private int[] LevelStats() {
 
 		ArrayList<String> results = _spelling_Aid.readList(new File(".results"));
-		int[] levelResult = new int[2];
+		int[] levelResult = new int[3];
 
 		for (String result : results) {
 			String[] split = result.split(" ");
 
-			if (split[0].matches(".*\\d+.*")) {
+			if (split[0].equals("Level" + _level)) {
+				
+				int score = Integer.parseInt(split[1]);
+				
+				if(score >= 9){
+					levelResult[0]++;
+				} else {
+					levelResult[1]++;
+				}
+				
+				levelResult[2] = levelResult[2] + score;
+				switch (score) {
+				case :
+					levelResult[0]++;
+					break;
 
-				if (Integer.parseInt(split[0]) == (_level)) {
-
-					switch (split[1]) {
-					case "mastered":
-						levelResult[0]++;
-						break;
-
-					case "failed":
-						levelResult[1]++;
-						break;
-					}
+				case "failed":
+					levelResult[1]++;
+					break;
 				}
 
 			}
 		}
 
 		return levelResult;
-	}
+	}*/
 
-	private void updateLevelResult(int[] levelResult) {
-		if(_type.equals(quizType.QUIZ)){
-			int total = levelResult[0] + levelResult[1];
-			levelStats.setText("Level " + _level + ":  " + "mastered - " + levelResult[0] + "/" + total
-					+ "  failed - " + levelResult[1] + "/" + total);
+	private void updateLevelResult() {
+		if (_type.equals(quizType.QUIZ)) {
+/*			double average = 0;
+			
+			if(total > 0){
+				average = (double) levelResult[2] / total;
+			}*/
+			
+			levelStats.setText("Level " + _level + ":  " + "Correct - " + numberCorrect + "/" + testNum + "  Incorrect - "
+					+ (testNum - numberCorrect) + "/" + testNum);
 		}
 	}
 
