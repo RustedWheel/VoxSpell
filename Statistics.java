@@ -21,8 +21,8 @@ public class Statistics{
 	private JButton close = new JButton("Main Menu");
 	private Spelling_Aid _spelling_Aid;
 	private JTable table;
-	private static DecimalFormat df = new DecimalFormat(".#");
-	private final static String[] columns = {"Level", "Mastered", "Failed", "Average Score", "Total Attempt"};
+	private static DecimalFormat df = new DecimalFormat("#.#");
+	private final static String[] columns = {"Level", "Passed", "Failed", "Average Score", "Total Attempts"};
 
 	public Statistics(Spelling_Aid spelling_Aid) {
 		_spelling_Aid = spelling_Aid;

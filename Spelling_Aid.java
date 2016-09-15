@@ -240,6 +240,7 @@ public class Spelling_Aid extends JFrame {
 		});
 
 		selectLV.addActionListener(new ActionListener() {
+			@SuppressWarnings("rawtypes")
 			public void actionPerformed(ActionEvent evt) {
 				JComboBox lv = (JComboBox) evt.getSource();
 				String selectedlv = (String) lv.getSelectedItem();
@@ -269,9 +270,14 @@ public class Spelling_Aid extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// Starts a new review and hides the main menu
-				_quiz = new Quiz(Quiz.quizType.REVIEW, Spelling_Aid.this, 0);
-				setVisible(false);
-				_quiz.startQuiz();
+				int response = JOptionPane.showConfirmDialog(null, selectLV, "Please select a level", JOptionPane.OK_CANCEL_OPTION);
+
+				if (response == JOptionPane.OK_OPTION) {
+					
+					_quiz = new Quiz(Quiz.quizType.REVIEW, Spelling_Aid.this, _level);
+					setVisible(false);
+					_quiz.startQuiz();
+				}
 
 			}
 
@@ -373,6 +379,7 @@ public class Spelling_Aid extends JFrame {
 		setResizable(false);
 		setLocationRelativeTo(null);
 
+		clearStatistics();
 	}
 
 	/**
@@ -457,13 +464,13 @@ public class Spelling_Aid extends JFrame {
 	public void appendFailed(String currentWord, int level) {
 		ArrayList<String> failed = readList(new File(".failed"));
 
+		currentWord = currentWord + "	" + level;
 		// If the failed list does not contain the word to be added, then it is
 		// added
 		if (!failed.contains(currentWord)) {
 
 			BufferedWriter bw = null;
 
-			currentWord = currentWord + "	" + level;
 			try {
 				bw = new BufferedWriter(new FileWriter(".failed", true));
 				bw.write(currentWord);

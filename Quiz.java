@@ -44,6 +44,7 @@ public class Quiz {
 	protected int attempts;
 	private ArrayList<String> words = new ArrayList<String>();
 	private ArrayList<String> previousWords;
+	private ArrayList<String> incorrectWords = new ArrayList<String>();
 	private int size;
 	private int testNum;
 	protected JFrame frame;
@@ -80,27 +81,36 @@ public class Quiz {
 		case QUIZ:
 
 			words = _spelling_Aid.readLevel(new File("NZCER-spelling-lists.txt"), _level);
-			
+
 			break;
 
 		case REVIEW:
 			// reads the failed file and stores the words as a list
-			words = _spelling_Aid.readList(new File(".failed"));
+			ArrayList<String> allFailed = _spelling_Aid.readList(new File(".failed"));
+			words.clear();
+			
+			for (String word : allFailed) {
+				String[] split = word.split("\t");
+				if (Integer.parseInt(split[1]) == _level) {
+					words.add(split[0]);
+				}
+			}
+
 			break;
 		}
-		
+
 		// Displays an error message if the file is empty
 		if (words.isEmpty()) {
 			switch (_type) {
 			case QUIZ:
-				JOptionPane.showMessageDialog(new JFrame(), "Error, wordlist is empty", "Error",
+				JOptionPane.showMessageDialog(new JFrame(), "Error, no words in level " + _level, "Error",
 						JOptionPane.ERROR_MESSAGE);
 				_spelling_Aid.setVisible(true);
 				frame.dispose();
 				break;
 
 			case REVIEW:
-				JOptionPane.showMessageDialog(new JFrame(), "Error, no words in failed list", "Error",
+				JOptionPane.showMessageDialog(new JFrame(), "Error, no failed words saved for level " + _level, "Error",
 						JOptionPane.ERROR_MESSAGE);
 				_spelling_Aid.setVisible(true);
 				frame.dispose();
@@ -118,7 +128,7 @@ public class Quiz {
 			// Determines the number of words to be quizzed, which is either
 			// 3 or the number of words in the list, if the list has less than 3
 			// words
-			size = 10;
+			size = words.size() < 10 ? words.size() : 10;
 			previousWords = new ArrayList<String>();
 
 			numberCorrect = 0;
@@ -172,28 +182,48 @@ public class Quiz {
 			_spelling_Aid.textToSpeech(previousCorrect);
 			previousCorrect.clear();
 
-			if (numberCorrect < 9) {
-				JOptionPane.showMessageDialog(new JFrame(),
-						"You have gotten " + numberCorrect
-								+ " words correct out of 10, please press restart to try again",
-						"Failure", JOptionPane.ERROR_MESSAGE);
+			if (_type == quizType.QUIZ) {
+				if (numberCorrect < 9) {
+					int response = JOptionPane.showConfirmDialog(new JFrame(),
+							"You have gotten " + numberCorrect
+							+ " words correct out of 10, would you like to see the words that you spelled incorrectly?",
+							"Failure", JOptionPane.YES_NO_OPTION);
 
-				_spelling_Aid.appendList(_level, numberCorrect);
+					if (response == JOptionPane.YES_OPTION) {
 
-			} else {
-				JOptionPane.showMessageDialog(new JFrame(),
-						"You have gotten " + numberCorrect
-								+ " words correct out of 10, you may choose to play a video reward, or proceed directly to the next level",
-						"Pass", JOptionPane.INFORMATION_MESSAGE);
+						JTextArea wrongWords = new JTextArea();
 
-				_spelling_Aid.appendList(_level, numberCorrect);
+						for (String word : incorrectWords) {
+							wrongWords.append(word + "\n");
+						}
 
-				videoReward.setEnabled(true);
-				nextLevel.setEnabled(true);
+						wrongWords.setEditable(false);
+
+						JScrollPane words = new JScrollPane(wrongWords);
+
+						JOptionPane.showMessageDialog(null, words,
+								"Your failed words", JOptionPane.INFORMATION_MESSAGE);
+					}
+
+					_spelling_Aid.appendList(_level, numberCorrect);
+					output.append("\nQuiz complete.\nPress Restart to start another quiz\nPress Main menu to exit\n");
+
+				} else {
+					JOptionPane.showMessageDialog(new JFrame(),
+							"You have gotten " + numberCorrect
+							+ " words correct out of 10, you may choose to play a video reward, or proceed directly to the next level",
+							"Pass", JOptionPane.INFORMATION_MESSAGE);
+
+					_spelling_Aid.appendList(_level, numberCorrect);
+
+					videoReward.setEnabled(true);
+					nextLevel.setEnabled(true);
+					output.append("\nQuiz complete.\nPress Restart to start another quiz on the current level\nPress Next Level to proceed to the next level\nPress Main menu to exit\n");
+				}
+
 			}
-
 			restart.setEnabled(true);
-			output.append("\nQuiz complete.\nPress Restart to start another quiz\nPress Main menu to exit\n");
+
 		}
 
 	}
@@ -304,10 +334,10 @@ public class Quiz {
 				// If the user correctly spells a word, it is removed from their
 				// failed list
 				if (correct) {
-					_spelling_Aid.removeWord(currentWord);
+					_spelling_Aid.removeWord(currentWord + "\t" + _level);
 					numberCorrect++;
 				}
-				
+
 				// Clears the JTextField
 				input.setText("");
 
@@ -317,9 +347,12 @@ public class Quiz {
 				if (correct || attempts == 2) {
 					updateLevelResult();
 					testNum++;
+					if (!correct) {
+						incorrectWords.add(currentWord);
+					}
 					test();
 				}
-				
+
 			}
 
 		});
@@ -329,6 +362,7 @@ public class Quiz {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// Starts a new quiz and disables the restart button
+				incorrectWords.clear();
 				startQuiz();
 				nextLevel.setEnabled(false);
 				videoReward.setEnabled(false);
@@ -392,6 +426,7 @@ public class Quiz {
 				videoReward.setEnabled(false);
 				restart.setEnabled(false);
 
+				incorrectWords.clear();
 				_level++;
 				startQuiz();
 			}
@@ -414,25 +449,26 @@ public class Quiz {
 		submit.setEnabled(false);
 
 		JPanel quizOptions = new JPanel();
-		
+
 		quizOptions.add(submit);
-		
+
 		repeat.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				repeated = true;
 				repeat.setEnabled(false);
+				submit.setEnabled(false);
 				ArrayList<String> text = new ArrayList<String>();
 				text.add(currentWord);
 				_spelling_Aid.textToSpeech(text);
 			}
-			
+
 		});
-		
+
 		repeat.setEnabled(false);
 		quizOptions.add(repeat);
-		
+
 		if (_type.equals(quizType.QUIZ)) {
 			panel.add(levelStats, BorderLayout.NORTH);
 		}
@@ -442,8 +478,11 @@ public class Quiz {
 
 		options.add(close, JPanel.LEFT_ALIGNMENT);
 		options.add(restart, JPanel.RIGHT_ALIGNMENT);
-		options.add(nextLevel);
-		options.add(videoReward);
+
+		if (_type == quizType.QUIZ) {
+			options.add(nextLevel);
+			options.add(videoReward);
+		}
 
 		nextLevel.setEnabled(false);
 		//videoReward.setEnabled(false);
@@ -498,7 +537,7 @@ public class Quiz {
 		return text.toLowerCase().equals(currentWord.toLowerCase());
 	}
 
-/*	private int[] LevelStats() {
+	/*	private int[] LevelStats() {
 
 		ArrayList<String> results = _spelling_Aid.readList(new File(".results"));
 		int[] levelResult = new int[3];
@@ -507,15 +546,15 @@ public class Quiz {
 			String[] split = result.split(" ");
 
 			if (split[0].equals("Level" + _level)) {
-				
+
 				int score = Integer.parseInt(split[1]);
-				
+
 				if(score >= 9){
 					levelResult[0]++;
 				} else {
 					levelResult[1]++;
 				}
-				
+
 				levelResult[2] = levelResult[2] + score;
 				switch (score) {
 				case :
@@ -535,12 +574,12 @@ public class Quiz {
 
 	private void updateLevelResult() {
 		if (_type.equals(quizType.QUIZ)) {
-/*			double average = 0;
-			
+			/*			double average = 0;
+
 			if(total > 0){
 				average = (double) levelResult[2] / total;
 			}*/
-			
+
 			levelStats.setText("Level " + _level + ":  " + "Correct - " + numberCorrect + "/" + testNum + "  Incorrect - "
 					+ (testNum - numberCorrect) + "/" + testNum);
 		}
