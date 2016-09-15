@@ -49,6 +49,8 @@ public class Quiz {
 	protected JFrame frame;
 	private int numberCorrect;
 	private ArrayList<String> previousCorrect = new ArrayList<String>();
+	protected JButton repeat = new JButton("Repeat");
+	protected boolean repeated;
 
 	private int _level;
 	private JLabel levelStats = new JLabel();
@@ -138,6 +140,7 @@ public class Quiz {
 
 		if (testNum <= size) {
 			attempts = 0;
+			repeated = false;
 
 			Random rand = new Random();
 			int wordNumber = (Math.abs(rand.nextInt()) % words.size());
@@ -228,6 +231,7 @@ public class Quiz {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				submit.setEnabled(false);
+				repeat.setEnabled(false);
 				// Checks that the user's input in the JTextField is spelled
 				// correctly
 				boolean correct = spellcheck(input.getText().toLowerCase());
@@ -409,12 +413,32 @@ public class Quiz {
 
 		submit.setEnabled(false);
 
+		JPanel quizOptions = new JPanel();
+		
+		quizOptions.add(submit);
+		
+		repeat.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				repeated = true;
+				repeat.setEnabled(false);
+				ArrayList<String> text = new ArrayList<String>();
+				text.add(currentWord);
+				_spelling_Aid.textToSpeech(text);
+			}
+			
+		});
+		
+		repeat.setEnabled(false);
+		quizOptions.add(repeat);
+		
 		if (_type.equals(quizType.QUIZ)) {
 			panel.add(levelStats, BorderLayout.NORTH);
 		}
 
 		panel.add(input, BorderLayout.CENTER);
-		panel.add(submit, BorderLayout.EAST);
+		panel.add(quizOptions, BorderLayout.EAST);
 
 		options.add(close, JPanel.LEFT_ALIGNMENT);
 		options.add(restart, JPanel.RIGHT_ALIGNMENT);

@@ -538,6 +538,11 @@ public class Spelling_Aid extends JFrame {
 			} else {
 				_quiz.submit.setEnabled(false);
 			}
+			if (_quiz.attempts == 0 && _quiz.repeated == false) {
+				_quiz.repeat.setEnabled(true);
+			} else {
+				_quiz.repeat.setEnabled(false);
+			}
 		}
 
 	}
