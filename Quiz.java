@@ -407,6 +407,7 @@ public class Quiz {
 
 		});
 
+		if (_type == quizType.QUIZ) {
 		videoReward.addActionListener(new ActionListener() {
 
 			@Override
@@ -432,7 +433,8 @@ public class Quiz {
 			}
 
 		});
-
+		}
+		
 		frame.setResizable(false);
 
 		JPanel panel = new JPanel(new BorderLayout());

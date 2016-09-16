@@ -45,6 +45,7 @@ public class Spelling_Aid extends JFrame {
 	private JButton exit = new JButton("Exit");
 	private JButton changeVoice = new JButton("Change voice");
 	protected String _selectedVoice;
+	private String _voice;
 
 	public static void main(String[] Args) {
 		SwingUtilities.invokeLater(new Runnable() {
@@ -73,15 +74,36 @@ public class Spelling_Aid extends JFrame {
 	 */
 	public void textToSpeech(ArrayList<String> texts) {
 
-		ArrayList<String> commands = new ArrayList<String>();
+		BufferedWriter bw = null;
 
-		// Creates a list of commands for the SwingWorker to execute
-		for (String text : texts) {
-			commands.add("echo " + "\"" + text + "\" | festival --tts");
-			System.out.println(text);
+		try {
+
+			bw = new BufferedWriter(new FileWriter(".text.scm", true));
+
+			if (_voice != null) {
+				bw.write(_voice);
+				bw.newLine();
+			}
+
+			for (String text : texts) {
+
+				bw.write("(SayText \"" + text + "\")");
+				bw.newLine();
+
+			}
+
+
+		} catch (IOException e) {
+
+		} finally {
+			try {
+				bw.close();
+			} catch (IOException e) {
+
+			}
 		}
-		// Creates a new SwingWorker and executes the commands
-		Speaker worker = new Speaker(commands);
+
+		Speaker worker = new Speaker();
 		worker.execute();
 
 	}
@@ -273,7 +295,7 @@ public class Spelling_Aid extends JFrame {
 				int response = JOptionPane.showConfirmDialog(null, selectLV, "Please select a level", JOptionPane.OK_CANCEL_OPTION);
 
 				if (response == JOptionPane.OK_OPTION) {
-					
+
 					_quiz = new Quiz(Quiz.quizType.REVIEW, Spelling_Aid.this, _level);
 					setVisible(false);
 					_quiz.startQuiz();
@@ -523,23 +545,23 @@ public class Spelling_Aid extends JFrame {
 	 */
 	class Speaker extends SwingWorker<Void, Void> {
 
-		private ArrayList<String> _commands;
-
-		public Speaker(ArrayList<String> commands) {
-			_commands = commands;
+		public Speaker() {
 		}
 
 		@Override
 		protected Void doInBackground() throws Exception {
-			for (String command : _commands) {
-				Spelling_Aid.bashCommand(command);
-			}
+
+			Spelling_Aid.bashCommand("festival -b .text.scm");
+
 			return null;
 		}
 
 		// If the quiz is complete, then disable the submit button, otherwise
 		// re-enable the submit button
 		protected void done() {
+
+			Spelling_Aid.bashCommand("rm -f .text.scm");
+
 			if (_quiz.attempts != 2) {
 				_quiz.submit.setEnabled(true);
 			} else {
@@ -568,10 +590,8 @@ public class Spelling_Aid extends JFrame {
 	}
 
 	public void setVoice(String voice){
-		String command = null;
 
-		command = "echo " + "\"(set! voice_default '" + "voice_" + voice + ")\""  + "> ~/.festivalrc";
-
-		bashCommand(command);
+		_voice = "(voice_" + voice + ")";
+		
 	}
 }
