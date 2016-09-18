@@ -88,7 +88,7 @@ public class Quiz {
 			// reads the failed file and stores the words as a list
 			ArrayList<String> allFailed = _spelling_Aid.readList(new File(".failed"));
 			words.clear();
-			
+
 			for (String word : allFailed) {
 				String[] split = word.split("\t");
 				if (Integer.parseInt(split[1]) == _level) {
@@ -209,16 +209,24 @@ public class Quiz {
 					output.append("\nQuiz complete.\nPress Restart to start another quiz\nPress Main menu to exit\n");
 
 				} else {
-					JOptionPane.showMessageDialog(new JFrame(),
-							"You have gotten " + numberCorrect
-							+ " words correct out of 10, you may choose to play a video reward, or proceed directly to the next level",
-							"Pass", JOptionPane.INFORMATION_MESSAGE);
 
 					_spelling_Aid.appendList(_level, numberCorrect);
 
 					videoReward.setEnabled(true);
-					nextLevel.setEnabled(true);
-					output.append("\nQuiz complete.\nPress Restart to start another quiz on the current level\nPress Next Level to proceed to the next level\nPress Main menu to exit\n");
+					if (_level < _spelling_Aid.maxLevel) {
+						JOptionPane.showMessageDialog(new JFrame(),
+								"You have gotten " + numberCorrect
+								+ " words correct out of 10, you may choose to play a video reward, or proceed directly to the next level",
+								"Pass", JOptionPane.INFORMATION_MESSAGE);
+						nextLevel.setEnabled(true);
+						output.append("\nQuiz complete.\nPress Restart to start another quiz on the current level\nPress Next Level to proceed to the next level\nPress Main menu to exit\n");
+					} else {
+						JOptionPane.showMessageDialog(new JFrame(),
+								"You have gotten " + numberCorrect
+								+ " words correct out of 10, you may choose to play a video reward. You have passed the final level, congratulations!",
+								"Pass", JOptionPane.INFORMATION_MESSAGE);
+						output.append("\nQuiz complete.\nPress Restart to start another quiz on the current level\nPress Main Menu to exit");
+					}
 				}
 
 			}
@@ -408,33 +416,33 @@ public class Quiz {
 		});
 
 		if (_type == quizType.QUIZ) {
-		videoReward.addActionListener(new ActionListener() {
+			videoReward.addActionListener(new ActionListener() {
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				videoReward.setEnabled(false);
-				VideoPlayer video = new VideoPlayer(Quiz.this);
-				frame.setVisible(false);
-			}
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					videoReward.setEnabled(false);
+					VideoPlayer video = new VideoPlayer(Quiz.this);
+					frame.setVisible(false);
+				}
 
-		});
+			});
 
-		nextLevel.addActionListener(new ActionListener() {
+			nextLevel.addActionListener(new ActionListener() {
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				nextLevel.setEnabled(false);
-				videoReward.setEnabled(false);
-				restart.setEnabled(false);
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					nextLevel.setEnabled(false);
+					videoReward.setEnabled(false);
+					restart.setEnabled(false);
 
-				incorrectWords.clear();
-				_level++;
-				startQuiz();
-			}
+					incorrectWords.clear();
+					_level++;
+					startQuiz();
+				}
 
-		});
+			});
 		}
-		
+
 		frame.setResizable(false);
 
 		JPanel panel = new JPanel(new BorderLayout());

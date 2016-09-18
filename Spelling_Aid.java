@@ -35,9 +35,7 @@ public class Spelling_Aid extends JFrame {
 	private JTextArea txtOutput = new JTextArea(10, 20);
 	private Quiz _quiz;
 	private Statistics _statistics;
-	private String[] levels = { "Level 1", "Level 2", "Level 3", "Level 4", "Level 5", "Level 6", "Level 7", "Level 8",
-			"Level 9", "Level 10", "Level 11" };
-	private JComboBox selectLV = new JComboBox(levels);
+	private JComboBox selectLV;
 	private JComboBox selectVoices;
 	private int _level = 1;
 	private ArrayList<String> _availableVoices = new ArrayList<String>();
@@ -46,6 +44,7 @@ public class Spelling_Aid extends JFrame {
 	private JButton changeVoice = new JButton("Change voice");
 	protected String _selectedVoice;
 	private String _voice;
+	protected int maxLevel = 0;
 
 	public static void main(String[] Args) {
 		SwingUtilities.invokeLater(new Runnable() {
@@ -261,6 +260,9 @@ public class Spelling_Aid extends JFrame {
 			}
 		});
 
+		
+		selectLV = new JComboBox(scanLevels("NZCER-spelling-lists.txt").toArray());
+		
 		selectLV.addActionListener(new ActionListener() {
 			@SuppressWarnings("rawtypes")
 			public void actionPerformed(ActionEvent evt) {
@@ -593,5 +595,21 @@ public class Spelling_Aid extends JFrame {
 
 		_voice = "(voice_" + voice + ")";
 		
+	}
+	
+	public ArrayList<String> scanLevels(String wordlist){
+		ArrayList<String> all = readList(new File(wordlist));
+		ArrayList<String> levels = new ArrayList<String>();
+		
+		for(String content: all){
+			if(content.startsWith("%Level")){
+				levels.add("Level " + content.split(" ")[1]);
+				if (Integer.parseInt(content.split(" ")[1]) > maxLevel) {
+					maxLevel = Integer.parseInt(content.split(" ")[1]);
+				}
+			}
+		}
+		
+		return levels;
 	}
 }
