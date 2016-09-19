@@ -2,8 +2,6 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -15,15 +13,17 @@ import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 @SuppressWarnings("serial")
 public class Spelling_Aid extends JFrame {
@@ -35,16 +35,27 @@ public class Spelling_Aid extends JFrame {
 	private JTextArea txtOutput = new JTextArea(10, 20);
 	private Quiz _quiz;
 	private Statistics _statistics;
+	@SuppressWarnings("rawtypes")
 	private JComboBox selectLV;
+	@SuppressWarnings("rawtypes")
 	private JComboBox selectVoices;
 	private int _level = 1;
 	private ArrayList<String> _availableVoices = new ArrayList<String>();
 	private String _voicePath = "/usr/share/festival/voices";
 	private JButton exit = new JButton("Exit");
-	private JButton changeVoice = new JButton("Change voice");
+	private JButton changeVoice = new JButton("Change Speaker Voice");
 	protected String _selectedVoice;
 	private String _voice;
 	protected int maxLevel = 0;
+	private int _maxSpeed = 20;
+	private int _minSpeed = 5;
+	private int _initSpeed = 15;
+	private JSlider voiceSpeed = new JSlider(JSlider.HORIZONTAL,_minSpeed,_maxSpeed,_initSpeed);
+	private double _speed;
+	private String _selectedSpeed;
+	private JButton settings = new JButton("Settings");
+	private JButton changeSpeed = new JButton("Change Speaker Speed");
+	private String _defaultSpeed = "(Parameter.set 'Duration_Stretch 1.0)";
 
 	public static void main(String[] Args) {
 		SwingUtilities.invokeLater(new Runnable() {
@@ -79,6 +90,8 @@ public class Spelling_Aid extends JFrame {
 
 			bw = new BufferedWriter(new FileWriter(".text.scm", true));
 
+
+
 			if (_voice != null) {
 				bw.write(_voice);
 				bw.newLine();
@@ -86,8 +99,19 @@ public class Spelling_Aid extends JFrame {
 
 			for (String text : texts) {
 
+				if ((text.equals("Correct") || text.equals("Incorrect, please try again"))) {
+					bw.write(_defaultSpeed);
+					bw.newLine();
+					System.out.println(_defaultSpeed);
+				} else if (_selectedSpeed != null) {
+					bw.write(_selectedSpeed);
+					bw.newLine();
+					System.out.println(_selectedSpeed);
+
+				}
 				bw.write("(SayText \"" + text + "\")");
 				bw.newLine();
+
 
 			}
 
@@ -219,6 +243,7 @@ public class Spelling_Aid extends JFrame {
 
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Spelling_Aid() {
 		super("Spelling Aid");
 		setSize(400, 400);
@@ -228,43 +253,35 @@ public class Spelling_Aid extends JFrame {
 		menu.setLayout(layout);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-		addWindowListener(new WindowListener() {
-
+		/*		addWindowListener(new WindowListener() {
 			@Override
 			public void windowOpened(WindowEvent e) {
 			}
-
 			@Override
 			public void windowClosing(WindowEvent e) {
 				bashCommand("> ~/.festivalrc");
 			}
-
 			@Override
 			public void windowClosed(WindowEvent e) {
 			}
-
 			@Override
 			public void windowIconified(WindowEvent e) {
 			}
-
 			@Override
 			public void windowDeiconified(WindowEvent e) {
 			}
-
 			@Override
 			public void windowActivated(WindowEvent e) {
 			}
-
 			@Override
 			public void windowDeactivated(WindowEvent e) {
 			}
-		});
+		});*/
 
-		
+
 		selectLV = new JComboBox(scanLevels("NZCER-spelling-lists.txt").toArray());
-		
+
 		selectLV.addActionListener(new ActionListener() {
-			@SuppressWarnings("rawtypes")
 			public void actionPerformed(ActionEvent evt) {
 				JComboBox lv = (JComboBox) evt.getSource();
 				String selectedlv = (String) lv.getSelectedItem();
@@ -382,10 +399,29 @@ public class Spelling_Aid extends JFrame {
 
 		});
 
+		voiceSpeed.setMinorTickSpacing(1);
+		voiceSpeed.setPaintTicks(true);
+
+		voiceSpeed.addChangeListener(new ChangeListener() {
+
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				JSlider source = (JSlider)e.getSource();
+				if(!source.getValueIsAdjusting()){
+					_speed = (25 - (double)source.getValue() )/ 10;
+					System.out.println(_speed);
+				}
+			}
+
+		});
+
+		Object[] voiceOptions = {changeVoice, changeSpeed };
+
 		changeVoice.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
+
 				int response = JOptionPane.showConfirmDialog(null, selectVoices, "Please select a voice to use", JOptionPane.OK_CANCEL_OPTION);
 				if (response == JOptionPane.OK_OPTION) {
 					setVoice(_selectedVoice);
@@ -393,7 +429,30 @@ public class Spelling_Aid extends JFrame {
 			}
 
 		});
-		options.add(changeVoice);
+
+		changeSpeed.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+
+				int response = JOptionPane.showConfirmDialog(null, voiceSpeed, "Please select a speed to use", JOptionPane.OK_CANCEL_OPTION);
+				if (response == JOptionPane.OK_OPTION) {
+					_selectedSpeed = "(Parameter.set 'Duration_Stretch " + _speed +")";
+				}
+			}
+
+		});
+
+		settings.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JOptionPane.showMessageDialog(null, voiceOptions, "Settings", JOptionPane.INFORMATION_MESSAGE);
+			}
+
+		});
+
+		options.add(settings);
 		options.add(exit);
 
 		add(txtOutput, BorderLayout.NORTH);
@@ -592,15 +651,13 @@ public class Spelling_Aid extends JFrame {
 	}
 
 	public void setVoice(String voice){
-
 		_voice = "(voice_" + voice + ")";
-		
 	}
-	
+
 	public ArrayList<String> scanLevels(String wordlist){
 		ArrayList<String> all = readList(new File(wordlist));
 		ArrayList<String> levels = new ArrayList<String>();
-		
+
 		for(String content: all){
 			if(content.startsWith("%Level")){
 				levels.add("Level " + content.split(" ")[1]);
@@ -609,7 +666,7 @@ public class Spelling_Aid extends JFrame {
 				}
 			}
 		}
-		
+
 		return levels;
 	}
 }

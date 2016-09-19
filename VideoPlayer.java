@@ -5,19 +5,12 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
-import com.sun.jna.Native;
-import com.sun.jna.NativeLibrary;
-
-import uk.co.caprica.vlcj.binding.LibVlc;
 import uk.co.caprica.vlcj.component.EmbeddedMediaPlayerComponent;
 import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer;
-import uk.co.caprica.vlcj.runtime.RuntimeUtil;
 
 
 public class VideoPlayer {
@@ -29,7 +22,7 @@ public class VideoPlayer {
     	
     	_quiz = quiz;
     
-        JFrame frame = new JFrame("The Awesome Mediaplayer");
+        final JFrame frame = new JFrame("Level up Reward");
 
         mediaPlayerComponent = new EmbeddedMediaPlayerComponent();
 
@@ -37,9 +30,9 @@ public class VideoPlayer {
         
         frame.add(mediaPlayerComponent);
 
-        JButton pause = new JButton("Pause");
+        final JButton pause = new JButton("Pause");
         JButton stop = new JButton("Stop");
-        JProgressBar progress = new JProgressBar();
+        final JProgressBar progress = new JProgressBar();
         
         JPanel pauseStop = new JPanel();
         
