@@ -102,13 +102,14 @@ public class Spelling_Aid extends JFrame {
 				if ((text.equals("Correct") || text.equals("Incorrect, please try again"))) {
 					bw.write(_defaultSpeed);
 					bw.newLine();
-					System.out.println(_defaultSpeed);
+					//System.out.println(_defaultSpeed);
 				} else if (_selectedSpeed != null) {
 					bw.write(_selectedSpeed);
 					bw.newLine();
-					System.out.println(_selectedSpeed);
+					//System.out.println(_selectedSpeed);
 
 				}
+				//System.out.println(text);
 				bw.write("(SayText \"" + text + "\")");
 				bw.newLine();
 
@@ -253,32 +254,6 @@ public class Spelling_Aid extends JFrame {
 		menu.setLayout(layout);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-		/*		addWindowListener(new WindowListener() {
-			@Override
-			public void windowOpened(WindowEvent e) {
-			}
-			@Override
-			public void windowClosing(WindowEvent e) {
-				bashCommand("> ~/.festivalrc");
-			}
-			@Override
-			public void windowClosed(WindowEvent e) {
-			}
-			@Override
-			public void windowIconified(WindowEvent e) {
-			}
-			@Override
-			public void windowDeiconified(WindowEvent e) {
-			}
-			@Override
-			public void windowActivated(WindowEvent e) {
-			}
-			@Override
-			public void windowDeactivated(WindowEvent e) {
-			}
-		});*/
-
-
 		selectLV = new JComboBox(scanLevels("NZCER-spelling-lists.txt").toArray());
 
 		selectLV.addActionListener(new ActionListener() {
@@ -361,12 +336,12 @@ public class Spelling_Aid extends JFrame {
 
 		});
 
-		for(String directory : listDirectories(_voicePath)){
-			String[] subDirectories = listDirectories(_voicePath + "/" + directory);
+/*		for(String directory : listDirectories(_voicePath + "/English")){*/
+			String[] subDirectories = listDirectories(_voicePath + "/english");
 			for(String voices : subDirectories){
 				_availableVoices.add(voices);
 			}
-		}
+		/*}*/
 
 		selectVoices = new JComboBox(_availableVoices.toArray());
 
@@ -379,7 +354,7 @@ public class Spelling_Aid extends JFrame {
 		});
 
 		txtOutput.setText(
-				"Welcome to the Spelling Aid!\n\nPress \"New Quiz\" to start a new quiz\nPress \"Review\" to review previously failed words\nPress \"View Statistics\" to view your current statistics\nPress \"Clear Statistics\" to clear all current statistics\nPress \"Change voice\" to change the text to speech voice");
+				"Welcome to the Spelling Aid!\n\nPress \"New Quiz\" to start a new quiz\nPress \"Review\" to review previously failed words\nPress \"View Statistics\" to view your current statistics\nPress \"Clear Statistics\" to clear all current statistics\nPress \"Settings\" to change the text to speech voice or speed");
 		txtOutput.setEditable(false);
 
 		menu.add(quiz);
@@ -409,13 +384,13 @@ public class Spelling_Aid extends JFrame {
 				JSlider source = (JSlider)e.getSource();
 				if(!source.getValueIsAdjusting()){
 					_speed = (25 - (double)source.getValue() )/ 10;
-					System.out.println(_speed);
+					//System.out.println(_speed);
 				}
 			}
 
 		});
 
-		Object[] voiceOptions = {changeVoice, changeSpeed };
+		final Object[] voiceOptions = {changeVoice, changeSpeed };
 
 		changeVoice.addActionListener(new ActionListener() {
 
@@ -623,10 +598,10 @@ public class Spelling_Aid extends JFrame {
 
 			Spelling_Aid.bashCommand("rm -f .text.scm");
 
-			if (_quiz.attempts != 2) {
-				_quiz.submit.setEnabled(true);
-			} else {
+			if (_quiz.attempts == 2 || _quiz.correct) {
 				_quiz.submit.setEnabled(false);
+			} else {
+				_quiz.submit.setEnabled(true);
 			}
 			if (_quiz.attempts == 0 && _quiz.repeated == false) {
 				_quiz.repeat.setEnabled(true);

@@ -18,7 +18,7 @@ public class VideoPlayer {
     private final EmbeddedMediaPlayerComponent mediaPlayerComponent;
 	private Quiz _quiz;
 
-    public VideoPlayer(Quiz quiz) {
+    public VideoPlayer(Quiz quiz, String filename) {
     	
     	_quiz = quiz;
     
@@ -31,20 +31,20 @@ public class VideoPlayer {
         frame.add(mediaPlayerComponent);
 
         final JButton pause = new JButton("Pause");
-        JButton stop = new JButton("Stop");
+        JButton exit = new JButton("Exit");
         final JProgressBar progress = new JProgressBar();
         
-        JPanel pauseStop = new JPanel();
+        JPanel pauseExit = new JPanel();
         
-        pauseStop.add(pause, JPanel.LEFT_ALIGNMENT);
-        pauseStop.add(stop, JPanel.RIGHT_ALIGNMENT);
+        pauseExit.add(pause, JPanel.LEFT_ALIGNMENT);
+        pauseExit.add(exit, JPanel.RIGHT_ALIGNMENT);
         
         JPanel menu = new JPanel();
         
         menu.setLayout(new GridLayout(2,1));
         
         menu.add(progress);
-        menu.add(pauseStop);
+        menu.add(pauseExit);
         
         frame.add(menu, BorderLayout.SOUTH);
         
@@ -63,7 +63,7 @@ public class VideoPlayer {
         	
         });
         
-        stop.addActionListener(new ActionListener() {
+        exit.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -93,8 +93,6 @@ public class VideoPlayer {
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         frame.setVisible(true);
 
-        String filename = "big_buck_bunny_1_minute.avi";
-        //String filename = "test.mp4";
         video.playMedia(filename);
         timer.start();
     }

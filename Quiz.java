@@ -47,6 +47,7 @@ public class Quiz {
 
 	private int _level;
 	private JLabel levelStats = new JLabel();
+	protected boolean correct;
 
 	public Quiz(quizType type, Spelling_Aid spelling_Aid, int level) {
 
@@ -141,6 +142,7 @@ public class Quiz {
 	private void test() {
 
 		if (testNum <= size) {
+			correct = false;
 			attempts = 0;
 			repeated = false;
 
@@ -211,13 +213,13 @@ public class Quiz {
 								+ " words correct out of 10, you may choose to play a video reward, or proceed directly to the next level",
 								"Pass", JOptionPane.INFORMATION_MESSAGE);
 						nextLevel.setEnabled(true);
-						output.append("\nQuiz complete.\nPress Restart to start another quiz on the current level\nPress Next Level to proceed to the next level\nPress Main menu to exit\n");
+						output.append("\nQuiz complete\nPress Restart to start another quiz on the current level\nPress Next Level to proceed to the next level\nPress Main menu to exit\n");
 					} else {
 						JOptionPane.showMessageDialog(new JFrame(),
 								"You have gotten " + numberCorrect
-								+ " words correct out of 10, you may choose to play a video reward. You have passed the final level, congratulations!",
+								+ " words correct out of 10, you may choose to play the bonus video reward! You have passed the final level, congratulations!",
 								"Pass", JOptionPane.INFORMATION_MESSAGE);
-						output.append("\nQuiz complete.\nPress Restart to start another quiz on the current level\nPress Main Menu to exit");
+						output.append("\nQuiz complete\nYou have unlocked the bonus video reward\nPress Restart to start another quiz on the current level\nPress Main Menu to exit");
 					}
 				}
 
@@ -268,7 +270,7 @@ public class Quiz {
 				repeat.setEnabled(false);
 				// Checks that the user's input in the JTextField is spelled
 				// correctly
-				boolean correct = spellcheck(input.getText().toLowerCase());
+				correct = spellcheck(input.getText().toLowerCase());
 
 				if (correct) {
 					previousCorrect.add("Correct");
@@ -423,8 +425,13 @@ public class Quiz {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					videoReward.setEnabled(false);
-					@SuppressWarnings("unused")
-					VideoPlayer video = new VideoPlayer(Quiz.this);
+					if (_level < _spelling_Aid.maxLevel) {
+						@SuppressWarnings("unused")
+						VideoPlayer video = new VideoPlayer(Quiz.this, "big_buck_bunny_1_minute.avi");
+					} else {
+						@SuppressWarnings("unused")
+						VideoPlayer video = new VideoPlayer(Quiz.this, "output.avi");
+					}
 					frame.setVisible(false);
 				}
 
@@ -498,7 +505,7 @@ public class Quiz {
 		}
 
 		nextLevel.setEnabled(false);
-		//videoReward.setEnabled(false);
+		videoReward.setEnabled(false);
 		restart.setEnabled(false);
 
 		frame.add(panel, BorderLayout.NORTH);

@@ -109,33 +109,33 @@ public class Statistics{
 			_spelling_Aid.setVisible(true);
 		} else {
 			// Stores the results for every word as a HashMap with a 3 element array representing mastered, faulted and failed
-			HashMap<String, Integer[]> stats = new HashMap<String, Integer[]>();
-			ArrayList<String> levels = new ArrayList<String>();
+			HashMap<Integer, Integer[]> stats = new HashMap<Integer, Integer[]>();
+			ArrayList<Integer> levels = new ArrayList<Integer>();
 
 			for (String result : results) {
 				String[] split = result.split(" ");
-					
+					int levelKey = Integer.parseInt(split[0].substring(5));
 					// If the HashMap does not contain the current word, add it along with a [0,0,0] array
-					if (!stats.containsKey(split[0])) {
-						levels.add(split[0]);
+					if (!stats.containsKey(levelKey)) {
+						levels.add(levelKey);
 						Integer[] blank = new Integer[3];
 
 						for (int i = 0; i < 3; i++) {
 							blank[i] = 0;
 						}
 
-						stats.put(split[0], blank);
+						stats.put(levelKey, blank);
 					}
 					
 					int score = Integer.parseInt(split[1]);
 
 					if(score >= 9){
-						stats.get(split[0])[0]++;
+						stats.get(levelKey)[0]++;
 					} else {
-						stats.get(split[0])[1]++;
+						stats.get(levelKey)[1]++;
 					}
 					
-					stats.get(split[0])[2] = stats.get(split[0])[2] + score;
+					stats.get(levelKey)[2] = stats.get(levelKey)[2] + score;
 					
 /*					// Add 1 to the integer array depending on the user's grade for that particular word
 					switch (split[1]) {
@@ -164,12 +164,12 @@ public class Statistics{
 			int row = 0;
 
 			// Creates the data array used for the JTable
-			for (String level : levels) {
+			for (Integer level : levels) {
 
 				Integer[] subtotals = stats.get(level);
 				int total = subtotals[0] + subtotals[1];
 
-				data[row][0] = level.substring(level.length() - 1);
+				data[row][0] = level;
 				data[row][1] = subtotals[0];
 				data[row][2] = subtotals[1];
 				
