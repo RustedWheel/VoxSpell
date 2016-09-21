@@ -63,6 +63,8 @@ public class Quiz {
 	 * and starts the quiz. An error message is shown if the wordlist file is
 	 * not called "wordlist" when in quiz mode or if the wordlist files are
 	 * empty
+	 * 
+	 * Modified A2 code
 	 */
 	public void startQuiz() {
 
@@ -73,7 +75,7 @@ public class Quiz {
 		switch (_type) {
 		case QUIZ:
 
-			words = _spelling_Aid.readLevel(new File("NZCER-spelling-lists.txt"), _level);
+			words = _spelling_Aid.readLevel(new File("resources/NZCER-spelling-lists.txt"), _level);
 
 			break;
 
@@ -113,13 +115,14 @@ public class Quiz {
 			if (_type == quizType.REVIEW) {
 				output.setText("Welcome to the review!\n\n");
 			} else {
+				// Prints the level of the quiz
 				output.setText("Welcome to level " + _level + " of the quiz!\n\n");
 			}
 
 			frame.setVisible(true);
 
 			// Determines the number of words to be quizzed, which is either
-			// 3 or the number of words in the list, if the list has less than 3
+			// 10 or the number of words in the list, if the list has less than 10
 			// words
 			size = words.size() < 10 ? words.size() : 10;
 			previousWords = new ArrayList<String>();
@@ -138,6 +141,8 @@ public class Quiz {
 	 * This method randomly selects a word from the wordlist that has not
 	 * already been tested in the current quiz uses textToSpeech to speak out
 	 * the word for the user to spell
+	 * 
+	 * Reused A2 code
 	 */
 	private void test() {
 
@@ -162,6 +167,7 @@ public class Quiz {
 
 			output.append("Please spell word " + testNum + " of " + size + "\n");
 
+			// If the word contains an apostrophe then the user is told that
 			if (currentWord.contains("'")) {
 				output.append("The one with an apostrophe." + "\n");
 			}
@@ -177,6 +183,8 @@ public class Quiz {
 			previousCorrect.clear();
 
 			if (_type == quizType.QUIZ) {
+				// The user is given an option to see the words that they failed if they do not pass a level
+				// Original code by Hunter
 				if (numberCorrect < 9) {
 					int response = JOptionPane.showConfirmDialog(new JFrame(),
 							"You have gotten " + numberCorrect
@@ -206,6 +214,8 @@ public class Quiz {
 
 					_spelling_Aid.appendList(_level, numberCorrect);
 
+					// If they pass the level then the user can move on to the next level or play a video reward
+					// If they are on the last level, then they are able to play the bonus video reward
 					videoReward.setEnabled(true);
 					if (_level < _spelling_Aid.maxLevel) {
 						JOptionPane.showMessageDialog(new JFrame(),
@@ -233,6 +243,8 @@ public class Quiz {
 	/**
 	 * This method creates the JFrame to display the quiz on and also sets up
 	 * the buttons with their ActionListeners
+	 * 
+	 * Modified A2 code
 	 */
 	private void setUp() {
 
@@ -419,6 +431,7 @@ public class Quiz {
 
 		});
 
+		// Sets up the listeners for reward and next level buttons if the quiz type is quiz
 		if (_type == quizType.QUIZ) {
 			videoReward.addActionListener(new ActionListener() {
 
@@ -427,16 +440,19 @@ public class Quiz {
 					videoReward.setEnabled(false);
 					if (_level < _spelling_Aid.maxLevel) {
 						@SuppressWarnings("unused")
-						VideoPlayer video = new VideoPlayer(Quiz.this, "big_buck_bunny_1_minute.avi");
+						VideoPlayer video = new VideoPlayer(Quiz.this, "resources/big_buck_bunny_1_minute.avi");
 					} else {
+						// The bonus video is played if the level is the final level
 						@SuppressWarnings("unused")
-						VideoPlayer video = new VideoPlayer(Quiz.this, "output.avi");
+						VideoPlayer video = new VideoPlayer(Quiz.this, "resources/bonus_reward.avi");
 					}
 					frame.setVisible(false);
 				}
 
 			});
 
+			// The next level is started
+			// Original code by Hunter
 			nextLevel.addActionListener(new ActionListener() {
 
 				@Override
@@ -472,6 +488,7 @@ public class Quiz {
 
 		quizOptions.add(submit);
 
+		// Plays the word once more once clicked
 		repeat.addActionListener(new ActionListener() {
 
 			@Override
@@ -487,8 +504,11 @@ public class Quiz {
 		});
 
 		repeat.setEnabled(false);
+		
 		quizOptions.add(repeat);
 
+		// If the quiz type is quiz, then the user's stats for the level are shown
+		// Original code by David
 		if (_type.equals(quizType.QUIZ)) {
 			panel.add(levelStats, BorderLayout.NORTH);
 		}
@@ -499,6 +519,9 @@ public class Quiz {
 		options.add(close, JPanel.LEFT_ALIGNMENT);
 		options.add(restart, JPanel.RIGHT_ALIGNMENT);
 
+		// If the quiz type is quiz, then the options for the quiz include a next level button and
+		// video reward button
+		// by Hunter
 		if (_type == quizType.QUIZ) {
 			options.add(nextLevel);
 			options.add(videoReward);
@@ -512,35 +535,8 @@ public class Quiz {
 		frame.add(scroll, BorderLayout.CENTER);
 		frame.add(options, BorderLayout.SOUTH);
 
+		// Sets the submit button as the default one so that the enter button can be used to submit
 		frame.getRootPane().setDefaultButton(submit);
-		/*
-		 * List<String> commandLine = new ArrayList<String>();
-		 * commandLine.add("festival"); commandLine.add("(voice.list)");
-		 * commandLine.add("(quit)");
-		 * 
-		 * ProcessBuilder builder = new ProcessBuilder(commandLine);
-		 * builder.redirectErrorStream(true);
-		 * 
-		 * try { Process b = builder.start(); OutputStream os =
-		 * b.getOutputStream(); InputStream is = b.getInputStream();
-		 * InputStreamReader isr = new InputStreamReader(is); BufferedReader br
-		 * = new BufferedReader(isr);
-		 * 
-		 * String line; while ((line = br.readLine()) != null) {
-		 * output.append(line + "\n"); }
-		 * 
-		 * b.waitFor(); if(b.exitValue() == 0) { BufferedWriter bw = new
-		 * BufferedWriter(new OutputStreamWriter(os));
-		 * bw.write("SELECT * FROM clients;"); bw.newLine(); bw.flush();
-		 * output.append("Content of " + dir + ":\n"); String line; while ((line
-		 * = br.readLine()) != null) { output.append("	" + line + "\n"); }
-		 * output.append("\n"); } else { String message = br.readLine();
-		 * JOptionPane.showMessageDialog(new JFrame(), message, "Message",
-		 * JOptionPane.INFORMATION_MESSAGE); }
-		 * 
-		 * } catch (Exception e) { // TODO Auto-generated catch block
-		 * e.printStackTrace(); }
-		 */
 
 	}
 
@@ -549,8 +545,9 @@ public class Quiz {
 	 * spelled a word, and also increments the number of attempts that the user
 	 * has used
 	 * 
-	 * @param text
-	 *            The user's attempt at the current word
+	 * Reused A2 code
+	 * 
+	 * @param text The user's attempt at the current word
 	 * @return
 	 */
 	protected boolean spellcheck(String text) {
@@ -558,48 +555,12 @@ public class Quiz {
 		return text.toLowerCase().equals(currentWord.toLowerCase());
 	}
 
-	/*	private int[] LevelStats() {
-
-		ArrayList<String> results = _spelling_Aid.readList(new File(".results"));
-		int[] levelResult = new int[3];
-
-		for (String result : results) {
-			String[] split = result.split(" ");
-
-			if (split[0].equals("Level" + _level)) {
-
-				int score = Integer.parseInt(split[1]);
-
-				if(score >= 9){
-					levelResult[0]++;
-				} else {
-					levelResult[1]++;
-				}
-
-				levelResult[2] = levelResult[2] + score;
-				switch (score) {
-				case :
-					levelResult[0]++;
-					break;
-
-				case "failed":
-					levelResult[1]++;
-					break;
-				}
-
-			}
-		}
-
-		return levelResult;
-	}*/
-
+	/**
+	 * This method updates the text on the quiz window showing the user's stats for the level
+	 * Original code by David
+	 */
 	private void updateLevelResult() {
 		if (_type.equals(quizType.QUIZ)) {
-			/*			double average = 0;
-
-			if(total > 0){
-				average = (double) levelResult[2] / total;
-			}*/
 
 			levelStats.setText("Level " + _level + ":  " + "Correct - " + numberCorrect + "/" + testNum + "  Incorrect - "
 					+ (testNum - numberCorrect) + "/" + testNum);

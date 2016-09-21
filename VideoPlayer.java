@@ -18,6 +18,9 @@ public class VideoPlayer {
     private final EmbeddedMediaPlayerComponent mediaPlayerComponent;
 	private Quiz _quiz;
 
+	/*
+	 * Original code by Hunter
+	 */
     public VideoPlayer(Quiz quiz, String filename) {
     	
     	_quiz = quiz;
@@ -74,6 +77,7 @@ public class VideoPlayer {
         	
         });
         
+        // update the progress bar every 50 ms with the current time/total time percent
         Timer timer = new Timer(50, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -93,22 +97,8 @@ public class VideoPlayer {
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         frame.setVisible(true);
 
+        // play the video specified in the input
         video.playMedia(filename);
         timer.start();
     }
-
-    /*public static void main(final String[] args) {
-        
-        NativeLibrary.addSearchPath(
-            RuntimeUtil.getLibVlcLibraryName(), "/Applications/vlc-2.0.0/VLC.app/Contents/MacOS/lib"
-        );
-        Native.loadLibrary(RuntimeUtil.getLibVlcLibraryName(), LibVlc.class);
-        
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                //new VideoPlayer(args);
-            }
-        });
-    }*/
 }

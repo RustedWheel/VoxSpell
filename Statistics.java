@@ -30,6 +30,7 @@ public class Statistics{
 
 	/**
 	 * This method displays the user's statistics in a JFrame with a JTable storing the data
+	 * It is reused code from A2
 	 */
 	public void showStats() {
 		calculateStats();
@@ -98,6 +99,9 @@ public class Statistics{
 		}
 	}
 
+	/*
+	 * Modified A2 code
+	 */
 	private void calculateStats() {
 		// Reads the current results
 		ArrayList<String> results = _spelling_Aid.readList(new File(".results"));
@@ -108,14 +112,14 @@ public class Statistics{
 					JOptionPane.ERROR_MESSAGE);
 			_spelling_Aid.setVisible(true);
 		} else {
-			// Stores the results for every word as a HashMap with a 3 element array representing mastered, faulted and failed
+			// Stores the results for every level as a HashMap with a 3 element array representing passed, failed and total score
 			HashMap<Integer, Integer[]> stats = new HashMap<Integer, Integer[]>();
 			ArrayList<Integer> levels = new ArrayList<Integer>();
 
 			for (String result : results) {
 				String[] split = result.split(" ");
 					int levelKey = Integer.parseInt(split[0].substring(5));
-					// If the HashMap does not contain the current word, add it along with a [0,0,0] array
+					// If the HashMap does not contain the current level, add it along with a [0,0,0] array
 					if (!stats.containsKey(levelKey)) {
 						levels.add(levelKey);
 						Integer[] blank = new Integer[3];
@@ -136,27 +140,10 @@ public class Statistics{
 					}
 					
 					stats.get(levelKey)[2] = stats.get(levelKey)[2] + score;
-					
-/*					// Add 1 to the integer array depending on the user's grade for that particular word
-					switch (split[1]) {
-					case "mastered" :
-						stats.get(split[0])[0]++;
-						break;
-
-					case "faulted" :
-						stats.get(split[0])[1]++;
-						break;
-
-					case "failed" :
-						stats.get(split[0])[2]++;
-						break;
-					
-					
-				}*/
 				
 			}
 
-			// Sorts the words alphabetically
+			// Sorts the levels in ascending order
 			Collections.sort(levels);
 
 			Object[][] data = new Object[levels.size()][5];

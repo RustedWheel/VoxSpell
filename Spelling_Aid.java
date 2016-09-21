@@ -79,8 +79,9 @@ public class Spelling_Aid extends JFrame {
 	 * This method turns a list of words to be spoken into speech by calling
 	 * festival using bash
 	 * 
-	 * @param texts
-	 *            The list of strings to be spoken in order
+	 * Modified A2 code
+	 * 
+	 * @param texts The list of strings to be spoken in order
 	 */
 	public void textToSpeech(ArrayList<String> texts) {
 
@@ -88,28 +89,31 @@ public class Spelling_Aid extends JFrame {
 
 		try {
 
+			// Creates a new scm file to write the tts speech on
 			bw = new BufferedWriter(new FileWriter(".text.scm", true));
 
-
-
+			// If the user has selected a voice, then write the voice into the scm file
 			if (_voice != null) {
 				bw.write(_voice);
 				bw.newLine();
 			}
 
+			// For every line, specify the speed for the tts to speak at. Which is 1x for "Correct" and "Incorrect"
+			// text. Otherwise it is at the speed defined by the user
+			// Original code by Hunter
 			for (String text : texts) {
 
-				if ((text.equals("Correct") || text.equals("Incorrect, please try again"))) {
+				if ((text.equals("Correct") || text.equals("Incorrect, please try again") || text.equals("Incorrect"))) {
 					bw.write(_defaultSpeed);
 					bw.newLine();
-					//System.out.println(_defaultSpeed);
+
 				} else if (_selectedSpeed != null) {
 					bw.write(_selectedSpeed);
 					bw.newLine();
-					//System.out.println(_selectedSpeed);
+
 
 				}
-				//System.out.println(text);
+
 				bw.write("(SayText \"" + text + "\")");
 				bw.newLine();
 
@@ -127,6 +131,7 @@ public class Spelling_Aid extends JFrame {
 			}
 		}
 
+		// Starts a new worker instance and executes it
 		Speaker worker = new Speaker();
 		worker.execute();
 
@@ -136,8 +141,9 @@ public class Spelling_Aid extends JFrame {
 	 * This method reads out a word and then the letters of that word
 	 * individually
 	 * 
-	 * @param word
-	 *            the word to split into individual characters and read out
+	 * Reused code from A2
+	 * 
+	 * @param word the word to split into individual characters and read out
 	 */
 	public void spellOut(String word) {
 
@@ -158,8 +164,9 @@ public class Spelling_Aid extends JFrame {
 	/**
 	 * This method executes a single bash command through the use of a Process
 	 * 
-	 * @param command
-	 *            The command to be executed using bash
+	 * Reused code from A2
+	 * 
+	 * @param command The command to be executed using bash
 	 */
 	public static void bashCommand(String command) {
 
@@ -177,8 +184,9 @@ public class Spelling_Aid extends JFrame {
 	 * This method reads each line in a file and stores each line into an
 	 * ArrayList of strings and returns the ArrayList
 	 * 
-	 * @param file
-	 *            The name of the file to be read
+	 * Reused code from A2
+	 * 
+	 * @param file The name of the file to be read
 	 * @return An ArrayList containing the lines of a file in sequential order
 	 */
 	public ArrayList<String> readList(File file) {
@@ -205,6 +213,15 @@ public class Spelling_Aid extends JFrame {
 
 	}
 
+	/**
+	 * This method reads all the words inside a level from a wordlist
+	 * 
+	 * Original code by David
+	 * 
+	 * @param file The wordlist containing all the levels and words
+	 * @param level The level from which words are to be found
+	 * @return An ArrayList containing all the words in a level
+	 */
 	public ArrayList<String> readLevel(File file, int level) {
 
 		ArrayList<String> results = new ArrayList<String>();
@@ -220,11 +237,14 @@ public class Spelling_Aid extends JFrame {
 			BufferedReader br = new BufferedReader(fr);
 
 			String line;
+			// Do nothing while the level header is not found
 			while ((line = br.readLine()) != null && !line.equals(levelString)) {
 			}
 
 			line = br.readLine();
 
+			// Add the words to the ArrayList once the level is found, up to when the header for the next level is found
+			// Or when the list ends
 			while (line != null) {
 				if (line.equals(nextLevel)) {
 					break;
@@ -245,6 +265,9 @@ public class Spelling_Aid extends JFrame {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
+	/*
+	 * Reused A2 code
+	 */
 	public Spelling_Aid() {
 		super("Spelling Aid");
 		setSize(400, 400);
@@ -254,8 +277,11 @@ public class Spelling_Aid extends JFrame {
 		menu.setLayout(layout);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-		selectLV = new JComboBox(scanLevels("NZCER-spelling-lists.txt").toArray());
+		// Finds out all of the levels in the word list and stores in a JComboBox
+		// Original code by David
+		selectLV = new JComboBox(scanLevels("resources/NZCER-spelling-lists.txt").toArray());
 
+		// Adds an ActionListener to the JComboBox to extract the level and save it in the _level field
 		selectLV.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				JComboBox lv = (JComboBox) evt.getSource();
@@ -270,6 +296,7 @@ public class Spelling_Aid extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 
+				// Asks the user to select a level to start at once they click Start Quiz
 				int response = JOptionPane.showConfirmDialog(null, selectLV, "Please select a level", JOptionPane.OK_CANCEL_OPTION);
 
 				if (response == JOptionPane.OK_OPTION) {
@@ -285,7 +312,7 @@ public class Spelling_Aid extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// Starts a new review and hides the main menu
+				// Asks the user to select a level to review, then starts a new review and hides the main menu
 				int response = JOptionPane.showConfirmDialog(null, selectLV, "Please select a level", JOptionPane.OK_CANCEL_OPTION);
 
 				if (response == JOptionPane.OK_OPTION) {
@@ -336,15 +363,17 @@ public class Spelling_Aid extends JFrame {
 
 		});
 
-/*		for(String directory : listDirectories(_voicePath + "/English")){*/
-			String[] subDirectories = listDirectories(_voicePath + "/english");
-			for(String voices : subDirectories){
-				_availableVoices.add(voices);
-			}
-		/*}*/
+		// Adds the list of available voices in /usr/share/festival/english to an Array
+		// and puts it in a JComboBox
+		// Original code by David
+		String[] subDirectories = listDirectories(_voicePath + "/english");
+		for(String voices : subDirectories){
+			_availableVoices.add(voices);
+		}
 
 		selectVoices = new JComboBox(_availableVoices.toArray());
-
+		
+		// Adds an ActionListener to the JComboBox to save the selected voice into the _selectedVoice field
 		selectVoices.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				JComboBox voice = (JComboBox) evt.getSource();
@@ -374,17 +403,20 @@ public class Spelling_Aid extends JFrame {
 
 		});
 
+		// Configure a JSlider to change the speed of the speaker, from 0.5x speed to 2x speed
+		// Original code by David/Hunter
 		voiceSpeed.setMinorTickSpacing(1);
 		voiceSpeed.setPaintTicks(true);
-
 		voiceSpeed.addChangeListener(new ChangeListener() {
 
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				JSlider source = (JSlider)e.getSource();
 				if(!source.getValueIsAdjusting()){
+					// _speed can range from (25-20)/10 which is 0.5 so 2x tts speed to 
+					// (25-5)/10 which is 2, so 0.5x tts speed. This allows the slider to increase
+					// the tts speed when slid right, as opposed to the opposite
 					_speed = (25 - (double)source.getValue() )/ 10;
-					//System.out.println(_speed);
 				}
 			}
 
@@ -392,6 +424,7 @@ public class Spelling_Aid extends JFrame {
 
 		final Object[] voiceOptions = {changeVoice, changeSpeed };
 
+		// Adds an ActionListener to the change voice button to display a JOptionPane asking the user to select a voice
 		changeVoice.addActionListener(new ActionListener() {
 
 			@Override
@@ -405,6 +438,7 @@ public class Spelling_Aid extends JFrame {
 
 		});
 
+		// Adds an ActionListener to the change speed button to display a JOptionPane asking the user to select a speed
 		changeSpeed.addActionListener(new ActionListener() {
 
 			@Override
@@ -418,6 +452,7 @@ public class Spelling_Aid extends JFrame {
 
 		});
 
+		// Adds an ActionListener to the change voice button to display a JOptionPane message allowing the user to change voice or speed
 		settings.addActionListener(new ActionListener() {
 
 			@Override
@@ -437,12 +472,15 @@ public class Spelling_Aid extends JFrame {
 		setResizable(false);
 		setLocationRelativeTo(null);
 
+		// Clears the statistics when first started up, so past data is not saved
 		clearStatistics();
 	}
 
 	/**
 	 * This method deletes the existing results and failed files and then
 	 * creates new ones that are empty
+	 * 
+	 * Reused code from A2
 	 */
 	protected void clearStatistics() {
 
@@ -467,16 +505,12 @@ public class Spelling_Aid extends JFrame {
 	}
 
 	/**
-	 * This method appends a word and the grade for that word to the results
-	 * file
+	 * This method appends a level and the score for that level to the results file
 	 * 
-	 * @param currentWord
-	 *            The word to append
-	 * @param attempts
-	 *            How many attempts the user had on the currentWord
-	 * @param correct
-	 *            A boolean value representing if the user correctly spelled the
-	 *            word
+	 * Modified code from A2
+	 * 
+	 * @param level
+	 * @param score
 	 */
 	public void appendList(int level, int score) {
 
@@ -486,17 +520,7 @@ public class Spelling_Aid extends JFrame {
 			// Opens the .results file for appending
 			bw = new BufferedWriter(new FileWriter(".results", true));
 
-			/*
-			 * // If they answered correctly in 1 attempt then that word is
-			 * mastered if (attempts == 1) { bw.write(currentWord + " mastered"
-			 * ); bw.newLine(); // If they answered correctly in 2 attempts then
-			 * that word is faulted } else if (attempts == 2 && correct) {
-			 * bw.write(currentWord + " faulted"); bw.newLine(); // If they
-			 * failed both attempts then that word is failed, and also added //
-			 * to the failed list } else { bw.write(currentWord + " failed");
-			 * bw.newLine(); appendFailed(currentWord); }
-			 */
-
+			// Writes the level and score to the results file
 			bw.write("Level" + level + " " + score);
 			bw.newLine();
 
@@ -516,12 +540,14 @@ public class Spelling_Aid extends JFrame {
 	 * This method appends a word to the failed file if the word is not already
 	 * on the failed file
 	 * 
-	 * @param currentWord
-	 *            The word to append to the failed file
+	 * Modified code from A2
+	 * 
+	 * @param currentWord the word to append to the failed file
 	 */
 	public void appendFailed(String currentWord, int level) {
 		ArrayList<String> failed = readList(new File(".failed"));
 
+		//The current word contains both the word as well as the level it is from
 		currentWord = currentWord + "	" + level;
 		// If the failed list does not contain the word to be added, then it is
 		// added
@@ -546,8 +572,9 @@ public class Spelling_Aid extends JFrame {
 	 * This method removes a word from the failed list if it exists there, it is
 	 * intended to be called once the user correctly spells a word
 	 * 
-	 * @param currentWord
-	 *            The word to remove from the failed file
+	 * Reused A2 code
+	 * 
+	 * @param currentWord The word to remove from the failed file
 	 */
 	public void removeWord(String currentWord) {
 
@@ -587,6 +614,7 @@ public class Spelling_Aid extends JFrame {
 		@Override
 		protected Void doInBackground() throws Exception {
 
+			// Calls a bash command to run festival with the scheme file
 			Spelling_Aid.bashCommand("festival -b .text.scm");
 
 			return null;
@@ -603,6 +631,9 @@ public class Spelling_Aid extends JFrame {
 			} else {
 				_quiz.submit.setEnabled(true);
 			}
+			
+			// The user is allowed to hear a repeat of the word if they have not attempted the word yet
+			// and they have also not repeated it before
 			if (_quiz.attempts == 0 && _quiz.repeated == false) {
 				_quiz.repeat.setEnabled(true);
 			} else {
@@ -612,6 +643,14 @@ public class Spelling_Aid extends JFrame {
 
 	}
 
+	/**
+	 * This method returns a String array containing the names of every directory inside a directory
+	 * 
+	 * Original code by David
+	 * 
+	 * @param directory
+	 * @return A list of folders inside a directory
+	 */
 	public String[] listDirectories(String directory){
 
 		File file = new File(directory);
@@ -625,10 +664,26 @@ public class Spelling_Aid extends JFrame {
 		return subDirectories;
 	}
 
+	/**
+	 * This method sets the voice field into a string that is able to be directly entered into a festival scm file
+	 * 
+	 * Original code by David
+	 *
+	 * @param voice The voice to set
+	 */
 	public void setVoice(String voice){
 		_voice = "(voice_" + voice + ")";
 	}
 
+	/**
+	 * This method scans all of the levels inside a wordlist and also saves the maximum level inside the
+	 * wordlist
+	 * 
+	 * Original code by David
+	 * 
+	 * @param wordlist The wordlist to scan the levels from
+	 * @return An ArrayList of levels inside the wordlist
+	 */
 	public ArrayList<String> scanLevels(String wordlist){
 		ArrayList<String> all = readList(new File(wordlist));
 		ArrayList<String> levels = new ArrayList<String>();
