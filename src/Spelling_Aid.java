@@ -1,5 +1,6 @@
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -24,6 +26,13 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.JLabel;
+import javax.swing.ImageIcon;
+import java.awt.Color;
+import java.awt.SystemColor;
+import java.awt.Font;
+import javax.swing.SwingConstants;
 
 @SuppressWarnings("serial")
 public class Spelling_Aid extends JFrame {
@@ -32,7 +41,6 @@ public class Spelling_Aid extends JFrame {
 	private JButton review = new JButton("Review Mistakes");
 	private JButton statistics = new JButton("View Statistics");
 	private JButton clear = new JButton("Clear Statistics");
-	private JTextArea txtOutput = new JTextArea(10, 20);
 	private Quiz _quiz;
 	private Statistics _statistics;
 	@SuppressWarnings("rawtypes")
@@ -42,8 +50,11 @@ public class Spelling_Aid extends JFrame {
 	private int _level = 1;
 	private ArrayList<String> _availableVoices = new ArrayList<String>();
 	private String _voicePath = "/usr/share/festival/voices";
+	private String _defaultFile = "NZCER-spelling-lists.txt";
+	private String _filePath = null;
 	private JButton exit = new JButton("Exit");
 	private JButton changeVoice = new JButton("Change Speaker Voice");
+	private JButton SelectFile = new JButton("Change Spelling List");
 	protected String _selectedVoice;
 	private String _voice;
 	protected int maxLevel = 0;
@@ -56,6 +67,8 @@ public class Spelling_Aid extends JFrame {
 	private JButton settings = new JButton("Settings");
 	private JButton changeSpeed = new JButton("Change Speaker Speed");
 	private String _defaultSpeed = "(Parameter.set 'Duration_Stretch 1.0)";
+	private final JButton btnHelp = new JButton("Help");
+	private final JFileChooser fileSelector = new JFileChooser();
 
 	public static void main(String[] Args) {
 		SwingUtilities.invokeLater(new Runnable() {
@@ -270,26 +283,22 @@ public class Spelling_Aid extends JFrame {
 	 */
 	public Spelling_Aid() {
 		super("Spelling Aid");
+		getContentPane().setBackground(new Color(248, 248, 255));
+		this.setResizable(false);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		
 		setSize(400, 400);
 		GridLayout layout = new GridLayout(2, 2);
 
 		JPanel menu = new JPanel();
 		menu.setLayout(layout);
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		/*menu.setBounds(0, 204, 400, 158);*/
+		JPanel welcomeScreen = new JPanel();
+		welcomeScreen.setBackground(new Color(248, 248, 255));
+		
+		updateSelectLevel(_defaultFile);
 
-		// Finds out all of the levels in the word list and stores in a JComboBox
-		// Original code by David
-		selectLV = new JComboBox(scanLevels("resources/NZCER-spelling-lists.txt").toArray());
-
-		// Adds an ActionListener to the JComboBox to extract the level and save it in the _level field
-		selectLV.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				JComboBox lv = (JComboBox) evt.getSource();
-				String selectedlv = (String) lv.getSelectedItem();
-				String[] level = selectedlv.split(" ");
-				_level = Integer.parseInt(level[1]);
-			}
-		});
+		quiz.setFont(new Font("SansSerif", Font.PLAIN, 14));
 
 		quiz.addActionListener(new ActionListener() {
 
@@ -300,14 +309,24 @@ public class Spelling_Aid extends JFrame {
 				int response = JOptionPane.showConfirmDialog(null, selectLV, "Please select a level", JOptionPane.OK_CANCEL_OPTION);
 
 				if (response == JOptionPane.OK_OPTION) {
+					
+					String file;
+					
+					if(_filePath == null){
+						file = _defaultFile;
+					} else {
+						file = _filePath;
+					}
+					
 					// Starts a new quiz and hides the main menu
-					_quiz = new Quiz(Quiz.quizType.QUIZ, Spelling_Aid.this, _level);
+					_quiz = new Quiz(Quiz.quizType.QUIZ, Spelling_Aid.this, _level, file);
 					setVisible(false);
 					_quiz.startQuiz();
 				}
 			}
 
 		});
+		review.setFont(new Font("SansSerif", Font.PLAIN, 14));
 		review.addActionListener(new ActionListener() {
 
 			@Override
@@ -317,7 +336,7 @@ public class Spelling_Aid extends JFrame {
 
 				if (response == JOptionPane.OK_OPTION) {
 
-					_quiz = new Quiz(Quiz.quizType.REVIEW, Spelling_Aid.this, _level);
+					_quiz = new Quiz(Quiz.quizType.REVIEW, Spelling_Aid.this, _level, null);
 					setVisible(false);
 					_quiz.startQuiz();
 				}
@@ -325,6 +344,7 @@ public class Spelling_Aid extends JFrame {
 			}
 
 		});
+		statistics.setFont(new Font("SansSerif", Font.PLAIN, 14));
 		statistics.addActionListener(new ActionListener() {
 
 			@Override
@@ -336,6 +356,7 @@ public class Spelling_Aid extends JFrame {
 			}
 
 		});
+		clear.setFont(new Font("SansSerif", Font.PLAIN, 14));
 		clear.addActionListener(new ActionListener() {
 
 			@Override
@@ -362,6 +383,8 @@ public class Spelling_Aid extends JFrame {
 			}
 
 		});
+		
+		
 
 		// Adds the list of available voices in /usr/share/festival/english to an Array
 		// and puts it in a JComboBox
@@ -382,16 +405,15 @@ public class Spelling_Aid extends JFrame {
 			}
 		});
 
-		txtOutput.setText(
-				"Welcome to the Spelling Aid!\n\nPress \"New Quiz\" to start a new quiz\nPress \"Review\" to review previously failed words\nPress \"View Statistics\" to view your current statistics\nPress \"Clear Statistics\" to clear all current statistics\nPress \"Settings\" to change the text to speech voice or speed");
-		txtOutput.setEditable(false);
-
 		menu.add(quiz);
 		menu.add(review);
 		menu.add(statistics);
 		menu.add(clear);
 
 		JPanel options = new JPanel();
+		options.setBackground(new Color(214, 217, 223));
+
+		exit.setFont(new Font("SansSerif", Font.PLAIN, 14));
 
 
 		exit.addActionListener(new ActionListener() {
@@ -422,7 +444,26 @@ public class Spelling_Aid extends JFrame {
 
 		});
 
-		final Object[] voiceOptions = {changeVoice, changeSpeed };
+		final Object[] Options = {changeVoice, changeSpeed, SelectFile };
+		
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("TEXT FILES", "txt", "text");
+		fileSelector.setFileFilter(filter);
+		
+		SelectFile.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				
+				int result = fileSelector.showOpenDialog(SelectFile);
+				if (result == JFileChooser.APPROVE_OPTION) {
+				    File selectedFile = fileSelector.getSelectedFile();
+				    _filePath = selectedFile.getAbsolutePath();
+				    updateSelectLevel(_filePath);
+				}
+				
+			}
+
+		});
 
 		// Adds an ActionListener to the change voice button to display a JOptionPane asking the user to select a voice
 		changeVoice.addActionListener(new ActionListener() {
@@ -451,29 +492,56 @@ public class Spelling_Aid extends JFrame {
 			}
 
 		});
+		
+		settings.setFont(new Font("SansSerif", Font.PLAIN, 14));
 
 		// Adds an ActionListener to the change voice button to display a JOptionPane message allowing the user to change voice or speed
 		settings.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(null, voiceOptions, "Settings", JOptionPane.INFORMATION_MESSAGE);
+				JOptionPane.showMessageDialog(null, Options, "Settings", JOptionPane.INFORMATION_MESSAGE);
 			}
 
 		});
-
+		
+		btnHelp.setFont(new Font("SansSerif", Font.PLAIN, 14));
+		btnHelp.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JOptionPane.showMessageDialog(null, "Press \"New Quiz\" to start a new quiz\nPress \"Review\" to review previously failed words\nPress \"View Statistics\" to view your current statistics\nPress \"Clear Statistics\" to clear all current statistics\nPress \"Settings\" to change the text to speech voice or speed or the spelling list", "Help", JOptionPane.INFORMATION_MESSAGE);
+			}
+		});
+		welcomeScreen.setLayout(new BorderLayout(0, 0));
+		
+		
+		JLabel logoLabel = new JLabel();
+		logoLabel.setBounds(0, 21, 388, 156);
+		/*getContentPane().add(logoLabel);*/
+		welcomeScreen.add(logoLabel, BorderLayout.CENTER);
+		ImageIcon oldLogo = new ImageIcon(Spelling_Aid.class.getResource("/img/VoxSpell.png"));
+		Image img = oldLogo.getImage();
+		Image logo = img.getScaledInstance(logoLabel.getWidth(), logoLabel.getHeight(), Image.SCALE_SMOOTH);
+		ImageIcon newLogo = new ImageIcon(logo);
+		logoLabel.setIcon(newLogo);
+		
+		JLabel Welcome = new JLabel("Welcome to the VoxSpell Spelling Aid!");
+	    Welcome.setBounds(54, 182, 294, 18);
+		Welcome.setHorizontalAlignment(SwingConstants.CENTER);
+		Welcome.setFont(new Font("SansSerif", Font.PLAIN, 15));
+		/*getContentPane().add(Welcome);*/
+		welcomeScreen.add(Welcome, BorderLayout.SOUTH);
+		setLocationRelativeTo(null);
+		
+		options.add(btnHelp);
 		options.add(settings);
 		options.add(exit);
-
-		add(txtOutput, BorderLayout.NORTH);
-		add(menu);
-		add(options, BorderLayout.SOUTH);
-
-		setResizable(false);
-		setLocationRelativeTo(null);
+		getContentPane().setLayout(new BorderLayout());
+		getContentPane().add(welcomeScreen, BorderLayout.NORTH);
+		getContentPane().add(menu, BorderLayout.CENTER);
+		getContentPane().add(options, BorderLayout.SOUTH);
 
 		// Clears the statistics when first started up, so past data is not saved
-		clearStatistics();
+		/*clearStatistics();*/
 	}
 
 	/**
@@ -698,5 +766,21 @@ public class Spelling_Aid extends JFrame {
 		}
 
 		return levels;
+	}
+	
+	public void updateSelectLevel(String file){
+		// Finds out all of the levels in the word list and stores in a JComboBox
+		// Original code by David
+		selectLV = new JComboBox(scanLevels(file).toArray());
+
+		// Adds an ActionListener to the JComboBox to extract the level and save it in the _level field
+		selectLV.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				JComboBox lv = (JComboBox) evt.getSource();
+				String selectedlv = (String) lv.getSelectedItem();
+				String[] level = selectedlv.split(" ");
+				_level = Integer.parseInt(level[1]);
+			}
+		});
 	}
 }

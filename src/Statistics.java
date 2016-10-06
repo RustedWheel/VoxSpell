@@ -1,4 +1,7 @@
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.GridLayout;
+import java.awt.Paint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
@@ -12,25 +15,70 @@ import java.util.HashMap;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableModel;
 
-public class Statistics{
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.NumberTickUnit;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.xy.IntervalXYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+
+public class Statistics {
 
 	private JFrame frame;
 	private JButton close = new JButton("Main Menu");
+	private JButton statDetail = new JButton("Graphical feedback");
 	private Spelling_Aid _spelling_Aid;
 	private JTable table;
 	private static DecimalFormat df = new DecimalFormat("#.#");
-	private final static String[] columns = {"Level", "Passed", "Failed", "Average Score", "Total Attempts"};
+	private final static String[] columns = { "Level", "Passed", "Failed", "Average Score", "Total Attempts" };
+	private HashMap<Integer, Integer[]> stats = new HashMap<Integer, Integer[]>();
+	private HashMap<Integer, ArrayList<Integer>> scores = new HashMap<Integer, ArrayList<Integer>>();
+	private ChartPanel chartPanel = null;
 
 	public Statistics(Spelling_Aid spelling_Aid) {
 		_spelling_Aid = spelling_Aid;
+		statDetail.setEnabled(false);
+
+		statDetail.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+
+				int row = table.getSelectedRow();
+				int level = (int) table.getValueAt(row, 0);
+
+				Integer[] levelStats = stats.get(level);
+				ArrayList<Integer> levelScores = scores.get(level);
+
+				graphFeedback feedback = new graphFeedback(levelStats, levelScores);
+				feedback.setVisible(true);
+
+			}
+
+		});
+
 	}
 
 	/**
-	 * This method displays the user's statistics in a JFrame with a JTable storing the data
-	 * It is reused code from A2
+	 * This method displays the user's statistics in a JFrame with a JTable
+	 * storing the data It is reused code from A2
 	 */
 	public void showStats() {
 		calculateStats();
@@ -38,11 +86,12 @@ public class Statistics{
 		if (table != null) {
 
 			frame = new JFrame("Statistics");
-			frame.setSize(500,400);
+			frame.setSize(860, 400);
 			frame.setLocationRelativeTo(null);
 			frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-			// Adds a listener to display the main menu once the statistics is closed
+			// Adds a listener to display the main menu once the statistics is
+			// closed
 			frame.addWindowListener(new WindowListener() {
 
 				@Override
@@ -76,11 +125,8 @@ public class Statistics{
 
 			});
 
-			// Adds the JTable to a JScrollPane to allow for scrolling and for headers to show up
-			JScrollPane scroll = new JScrollPane(table);
-			frame.add(scroll,BorderLayout.CENTER);
-
-			// Disposes the JFrame and unhides the main menu once the "Main Menu" button is pressed
+			// Disposes the JFrame and unhides the main menu once the "Main
+			// Menu" button is pressed
 			close.addActionListener(new ActionListener() {
 
 				@Override
@@ -91,8 +137,20 @@ public class Statistics{
 
 			});
 
+			JPanel options = new JPanel();
+			options.setLayout(new GridLayout());
+			options.add(close);
+			options.add(statDetail);
+
+			// Adds the JTable to a JScrollPane to allow for scrolling and for
+			// headers to show up
+			JScrollPane scroll = new JScrollPane(table);
+
+			frame.add(chartPanel, BorderLayout.EAST);
+			frame.add(scroll, BorderLayout.WEST);
+
 			// Finally displays the JFrame containing the statistics
-			frame.add(close,BorderLayout.SOUTH);
+			frame.add(options, BorderLayout.SOUTH);
 			frame.setResizable(false);
 			frame.setVisible(true);
 
@@ -108,39 +166,50 @@ public class Statistics{
 
 		// Displays an error message if there are no statistics to be shown
 		if (results.size() == 0) {
-			JOptionPane.showMessageDialog(new JFrame(), "Error, no results saved", "Error",
-					JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(new JFrame(), "Error, no results saved", "Error", JOptionPane.ERROR_MESSAGE);
 			_spelling_Aid.setVisible(true);
 		} else {
-			// Stores the results for every level as a HashMap with a 3 element array representing passed, failed and total score
-			HashMap<Integer, Integer[]> stats = new HashMap<Integer, Integer[]>();
+			// Stores the results for every level as a HashMap with a 3 element
+			// array representing passed, failed and total score
+			/*
+			 * HashMap<Integer, Integer[]> stats = new HashMap<Integer,
+			 * Integer[]>();
+			 */
 			ArrayList<Integer> levels = new ArrayList<Integer>();
 
 			for (String result : results) {
 				String[] split = result.split(" ");
-					int levelKey = Integer.parseInt(split[0].substring(5));
-					// If the HashMap does not contain the current level, add it along with a [0,0,0] array
-					if (!stats.containsKey(levelKey)) {
-						levels.add(levelKey);
-						Integer[] blank = new Integer[3];
+				int levelKey = Integer.parseInt(split[0].substring(5));
+				// If the HashMap does not contain the current level, add it
+				// along with a [0,0,0] array
+				if (!stats.containsKey(levelKey)) {
+					levels.add(levelKey);
+					Integer[] blank = new Integer[3];
 
-						for (int i = 0; i < 3; i++) {
-							blank[i] = 0;
-						}
-
-						stats.put(levelKey, blank);
+					for (int i = 0; i < 3; i++) {
+						blank[i] = 0;
 					}
-					
-					int score = Integer.parseInt(split[1]);
 
-					if(score >= 9){
-						stats.get(levelKey)[0]++;
-					} else {
-						stats.get(levelKey)[1]++;
-					}
-					
-					stats.get(levelKey)[2] = stats.get(levelKey)[2] + score;
-				
+					stats.put(levelKey, blank);
+				}
+
+				if (!scores.containsKey(levelKey)) {
+					ArrayList<Integer> scorelist = new ArrayList<Integer>();
+					scores.put(levelKey, scorelist);
+				}
+
+				int score = Integer.parseInt(split[1]);
+
+				scores.get(levelKey).add(score);
+
+				if (score >= 9) {
+					stats.get(levelKey)[0]++;
+				} else {
+					stats.get(levelKey)[1]++;
+				}
+
+				stats.get(levelKey)[2] = stats.get(levelKey)[2] + score;
+
 			}
 
 			// Sorts the levels in ascending order
@@ -159,24 +228,76 @@ public class Statistics{
 				data[row][0] = level;
 				data[row][1] = subtotals[0];
 				data[row][2] = subtotals[1];
-				
-				if(total > 0){
+
+				if (total > 0) {
 					data[row][3] = df.format((double) subtotals[2] / total);
 				} else {
 					data[row][3] = 0;
 				}
-				
+
 				data[row][4] = total;
 
 				row++;
 			}
 
 			// Makes the JTable and disallows editing and resizing
-			table = new JTable(data, columns);
+			table = new JTable(new Model(data, columns));
 			table.getTableHeader().setReorderingAllowed(false);
 			table.getTableHeader().setResizingAllowed(false);
 			table.getColumnModel().getColumn(0).setPreferredWidth(40);
-			table.setEnabled(false);
+			table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			table.setRowSelectionAllowed(true);
+			table.getColumnModel().getColumn(3).setPreferredWidth(100);
+			table.getColumnModel().getColumn(4).setPreferredWidth(100);
+
+			table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+				public void valueChanged(ListSelectionEvent event) {
+					statDetail.setEnabled(true);
+				}
+			});
+
+			DefaultCategoryDataset dataset = NewDataset(data);
+			JFreeChart chart = NewChart(dataset);
+			chartPanel = new ChartPanel(chart);
+			chartPanel.setPreferredSize(new java.awt.Dimension(400, 270));
+
 		}
 	}
+
+	private JFreeChart NewChart(DefaultCategoryDataset dataset) {
+		final JFreeChart chart = ChartFactory.createBarChart("Average score for each attempted level", "Level", "Score",
+				dataset, PlotOrientation.VERTICAL, true, true, false);
+		CategoryPlot plot = chart.getCategoryPlot();
+		BarRenderer bar = (BarRenderer) plot.getRenderer();
+		Paint paint = new Color(83, 104, 120, 255);
+		Paint background = new Color(248, 248, 255, 255);
+		Paint grid = new Color(112, 128, 144, 255);
+		bar.setSeriesPaint(0, paint);
+		plot.setBackgroundPaint(background);
+		plot.setRangeGridlinePaint(grid);
+
+		return chart;
+	}
+
+	private DefaultCategoryDataset NewDataset(Object[][] data) {
+		DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+		for (int i = 0; i < data.length; i++) {
+			dataset.setValue(Double.parseDouble((String) data[i][3]), "Score", Integer.toString((int) data[i][0]));
+		}
+
+		return dataset;
+	}
+
+	public class Model extends DefaultTableModel {
+
+		Model(Object[][] data, String[] column) {
+			super(data, column);
+		}
+
+		@Override
+		public boolean isCellEditable(int row, int column) {
+			return false;
+		}
+	}
+
 }

@@ -44,17 +44,19 @@ public class Quiz {
 	private ArrayList<String> previousCorrect = new ArrayList<String>();
 	protected JButton repeat = new JButton("Repeat");
 	protected boolean repeated;
+	private String _file;
 
 	private int _level;
 	private JLabel levelStats = new JLabel();
 	protected boolean correct;
 
-	public Quiz(quizType type, Spelling_Aid spelling_Aid, int level) {
+	public Quiz(quizType type, Spelling_Aid spelling_Aid, int level, String file) {
 
 		_type = type;
 		_spelling_Aid = spelling_Aid;
 		_level = level;
-
+		_file = file;
+		
 	}
 
 	/**
@@ -75,7 +77,7 @@ public class Quiz {
 		switch (_type) {
 		case QUIZ:
 
-			words = _spelling_Aid.readLevel(new File("resources/NZCER-spelling-lists.txt"), _level);
+			words = _spelling_Aid.readLevel(new File(_file), _level);
 
 			break;
 
