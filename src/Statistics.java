@@ -1,5 +1,7 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Paint;
 import java.awt.event.ActionEvent;
@@ -20,6 +22,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.border.MatteBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
@@ -30,6 +33,7 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.NumberTickUnit;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
@@ -138,20 +142,22 @@ public class Statistics {
 			});
 
 			JPanel options = new JPanel();
-			options.setLayout(new GridLayout());
+			options.setBackground(new Color(214, 217, 223));
+			options.setLayout(new FlowLayout(FlowLayout.LEFT));
 			options.add(close);
 			options.add(statDetail);
 
 			// Adds the JTable to a JScrollPane to allow for scrolling and for
 			// headers to show up
 			JScrollPane scroll = new JScrollPane(table);
-
+			scroll.setBackground(new Color(214, 217, 223));
 			frame.add(chartPanel, BorderLayout.EAST);
 			frame.add(scroll, BorderLayout.WEST);
 
 			// Finally displays the JFrame containing the statistics
 			frame.add(options, BorderLayout.SOUTH);
 			frame.setResizable(false);
+			frame.setBackground(new Color(214, 217, 223));
 			frame.setVisible(true);
 
 		}
@@ -260,13 +266,24 @@ public class Statistics {
 			JFreeChart chart = NewChart(dataset);
 			chartPanel = new ChartPanel(chart);
 			chartPanel.setPreferredSize(new java.awt.Dimension(400, 270));
-
+			chartPanel.setBorder(new MatteBorder(1,1,1,1, (Color) new Color(83, 104, 120, 255)));
 		}
 	}
 
 	private JFreeChart NewChart(DefaultCategoryDataset dataset) {
-		final JFreeChart chart = ChartFactory.createBarChart("Average score for each attempted level", "Level", "Score",
-				dataset, PlotOrientation.VERTICAL, true, true, false);
+		final JFreeChart chart = ChartFactory.createBarChart(
+				"Average score for each \n attempted level", 
+				"Level", 
+				"Score",
+				dataset, 
+				PlotOrientation.VERTICAL, 
+				true, 
+				true, 
+				false);
+		chart.setBackgroundPaint(new Color(240, 240, 240, 255));
+		/*chart.setBackgroundPaint(new Color(214, 217, 223, 255));*/
+		chart.getTitle().setFont(new Font("SansSerif", Font.ITALIC, 20));
+		chart.getTitle().setPaint(new Color(51, 47, 47));
 		CategoryPlot plot = chart.getCategoryPlot();
 		BarRenderer bar = (BarRenderer) plot.getRenderer();
 		Paint paint = new Color(83, 104, 120, 255);
@@ -275,6 +292,9 @@ public class Statistics {
 		bar.setSeriesPaint(0, paint);
 		plot.setBackgroundPaint(background);
 		plot.setRangeGridlinePaint(grid);
+		NumberAxis yAxis = (NumberAxis) plot.getRangeAxis();
+		yAxis.setRange(0.0,10.0);
+		yAxis.setTickUnit(new NumberTickUnit(1.0));
 
 		return chart;
 	}

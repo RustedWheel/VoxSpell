@@ -1,5 +1,8 @@
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
@@ -9,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -16,6 +20,18 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
+import javax.swing.plaf.ColorUIResource;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
+import javax.swing.text.StyledDocument;
 
 public class Quiz {
 
@@ -28,10 +44,11 @@ public class Quiz {
 	private JTextField input = new JTextField();
 	private JButton restart = new JButton("Restart");
 	protected JButton submit = new JButton("Submit");
-	private JButton close = new JButton("Main menu");
+	private JButton close = new JButton("Main Menu");
+	
 	private JButton nextLevel = new JButton("Next level");
 	private JButton videoReward = new JButton("Reward");
-	private JTextArea output = new JTextArea();
+	private JTextPane output = new JTextPane();;
 	private String currentWord = "";
 	protected int attempts;
 	private ArrayList<String> words = new ArrayList<String>();
@@ -56,7 +73,6 @@ public class Quiz {
 		_spelling_Aid = spelling_Aid;
 		_level = level;
 		_file = file;
-		
 	}
 
 	/**
@@ -115,10 +131,10 @@ public class Quiz {
 			}
 		} else {
 			if (_type == quizType.REVIEW) {
-				output.setText("Welcome to the review!\n\n");
+				appendToOutput("Welcome to the review!\n\n",new Color(52, 80, 101),true);
 			} else {
 				// Prints the level of the quiz
-				output.setText("Welcome to level " + _level + " of the quiz!\n\n");
+				appendToOutput("Welcome to level " + _level + " of the quiz!\n\n",new Color(52, 80, 101),true);
 			}
 
 			frame.setVisible(true);
@@ -167,14 +183,15 @@ public class Quiz {
 			// be selected again
 			previousWords.add(currentWord);
 
-			output.append("Please spell word " + testNum + " of " + size + "\n");
+			appendToOutput("Please spell word " + testNum + " of " + size + "\n\n",new Color(51, 47, 47),true);
 
 			// If the word contains an apostrophe then the user is told that
 			if (currentWord.contains("'")) {
-				output.append("The one with an apostrophe." + "\n");
+				appendToOutput("The one with an apostrophe." + "\n\n",new Color(51, 47, 47),false);
 			}
 
 			// Speaks the word selected
+			previousCorrect.add("Please spell the word, ");
 			previousCorrect.add(currentWord);
 			_spelling_Aid.textToSpeech(previousCorrect);
 			previousCorrect.clear();
@@ -210,7 +227,7 @@ public class Quiz {
 					}
 
 					_spelling_Aid.appendList(_level, numberCorrect);
-					output.append("\nQuiz complete.\nPress Restart to start another quiz\nPress Main menu to exit\n");
+					appendToOutput("\nQuiz complete.\nPress Restart to start another quiz\nPress Main menu to exit\n\n",new Color(51, 47, 47),false);
 
 				} else {
 
@@ -225,14 +242,15 @@ public class Quiz {
 								+ " words correct out of 10, you may choose to play a video reward, or proceed directly to the next level",
 								"Pass", JOptionPane.INFORMATION_MESSAGE);
 						nextLevel.setEnabled(true);
-						output.append("\nQuiz complete\nPress Restart to start another quiz on the current level\nPress Next Level to proceed to the next level\nPress Main menu to exit\n");
+						appendToOutput("\nQuiz complete\nPress Restart to start another quiz on the current level\nPress Next Level to proceed to the next level\nPress Main menu to exit\n",new Color(51, 47, 47),false);
 					} else {
 						JOptionPane.showMessageDialog(new JFrame(),
 								"You have gotten " + numberCorrect
 								+ " words correct out of 10, you may choose to play the bonus video reward! You have passed the final level, congratulations!",
 								"Pass", JOptionPane.INFORMATION_MESSAGE);
-						output.append("\nQuiz complete\nYou have unlocked the bonus video reward\nPress Restart to start another quiz on the current level\nPress Main Menu to exit");
+						appendToOutput("\nQuiz complete\nYou have unlocked the bonus video reward\nPress Restart to start another quiz on the current level\nPress Main Menu to exit\n\n",new Color(51, 47, 47),false);
 					}
+					
 				}
 
 			}
@@ -258,6 +276,14 @@ public class Quiz {
 
 		frame.setSize(400, 450);
 		frame.setLocationRelativeTo(null);
+		
+		levelStats.setFont(new Font("SansSerif", Font.PLAIN, 14));
+		/*final DefaultStyledDocument doc = new DefaultStyledDocument();
+		output = new JTextPane(doc);*/
+		
+		EmptyBorder border = new EmptyBorder(new Insets(10,10,10,10));
+		output.setBorder(border);
+		output.setMargin(new Insets(5,5,5,5));
 
 		// The quiz JFrame is disposed and the main menu is unhidden once the
 		// user
@@ -288,7 +314,7 @@ public class Quiz {
 
 				if (correct) {
 					previousCorrect.add("Correct");
-					output.append("Correct\n");
+					appendToOutput("Correct\n\n",new Color(44,115,58),false);
 					/* _spelling_Aid.appendList(currentWord, attempts, true); */
 				} else {
 					if (attempts == 1) {
@@ -296,7 +322,7 @@ public class Quiz {
 						// allowed to spell the word again
 						ArrayList<String> text = new ArrayList<String>();
 						text.add("Incorrect, please try again");
-						output.append("Incorrect, please try again\n");
+						appendToOutput("Incorrect, please try again\n\n",new Color(148,48,48),false);
 						text.add(currentWord);
 						text.add(currentWord);
 						_spelling_Aid.textToSpeech(text);
@@ -306,7 +332,7 @@ public class Quiz {
 						// failed
 						previousCorrect.add("Incorrect");
 
-						output.append("Incorrect\n");
+						appendToOutput("Incorrect\n\n",new Color(148,48,48),false);
 						_spelling_Aid.appendFailed(currentWord, _level);
 
 						// If the user is in review mode, they are given an
@@ -333,12 +359,12 @@ public class Quiz {
 
 									if (correct) {
 										previousCorrect.add("Correct");
-										output.append("Correct\n");
+										appendToOutput("Correct\n\n",new Color(44,115,58),false);
 
 									} else {
 
 										previousCorrect.add("Incorrect");
-										output.append("Incorrect\n");
+										appendToOutput("Incorrect\n\n",new Color(148,48,48),false);
 
 									}
 
@@ -383,6 +409,7 @@ public class Quiz {
 			public void actionPerformed(ActionEvent e) {
 				// Starts a new quiz and disables the restart button
 				incorrectWords.clear();
+				output.setText("");
 				startQuiz();
 				nextLevel.setEnabled(false);
 				videoReward.setEnabled(false);
@@ -464,6 +491,7 @@ public class Quiz {
 					restart.setEnabled(false);
 
 					incorrectWords.clear();
+					output.setText("");
 					_level++;
 					startQuiz();
 				}
@@ -477,13 +505,24 @@ public class Quiz {
 		JPanel options = new JPanel();
 
 		// Disables editing of the JTextArea
-		output.setEditable(false);
-		output.setLineWrap(true);
+		/*output.setEditable(false);*/
+		
+		
+		UIDefaults defaults = UIManager.getDefaults();
+		defaults.put("TextPane.background",new ColorUIResource(new Color(248, 248, 255)));
+		defaults.put("TextPane.inactiveBackground",new ColorUIResource(new Color(248, 248, 255)));
+/*		defaults.put("output.background",new ColorUIResource(new Color(248, 248, 255)));
+		defaults.put("output.inactiveBackground",new ColorUIResource(new Color(248, 248, 255)));*/
+		
+		defaults.put("TextPane[Enabled].backgroundPainter",new Color(248, 248, 255));
+		output.putClientProperty("Nimbus.Overrides",defaults);
+		output.putClientProperty("Nimbus.Overrides.InheritDefaults",true);
+		output.setBackground(new Color(248, 248, 255));
 
 		JScrollPane scroll = new JScrollPane(output);
 
 		input.setPreferredSize(new Dimension(250, 30));
-
+		input.setBackground(new Color(248, 248, 255));
 		submit.setEnabled(false);
 
 		JPanel quizOptions = new JPanel();
@@ -499,7 +538,7 @@ public class Quiz {
 				repeat.setEnabled(false);
 				submit.setEnabled(false);
 				ArrayList<String> text = new ArrayList<String>();
-				text.add(currentWord);
+				text.add("repeat " + currentWord);
 				_spelling_Aid.textToSpeech(text);
 			}
 
@@ -567,6 +606,41 @@ public class Quiz {
 			levelStats.setText("Level " + _level + ":  " + "Correct - " + numberCorrect + "/" + testNum + "  Incorrect - "
 					+ (testNum - numberCorrect) + "/" + testNum);
 		}
+	}
+	
+	private void appendToOutput(String msg, Color c, boolean bold){
+		output.setEditable(true);
+		
+		StyleContext style = StyleContext.getDefaultStyleContext();
+		AttributeSet set = style.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, c);
+		
+		set = style.addAttribute(set,StyleConstants.FontFamily,"SansSerif");
+		set = style.addAttribute(set,StyleConstants.Alignment,StyleConstants.ALIGN_LEFT);
+		
+		if(bold == true){
+			set = style.addAttribute(set,StyleConstants.Bold,new Boolean(true));
+		} else {
+			set = style.addAttribute(set,StyleConstants.Bold,new Boolean(false));
+		}
+		
+		if(msg.contains("Welcome") && (msg.contains("level") || (msg.contains("review")))){
+			set = style.addAttribute(set,StyleConstants.FontSize,16);
+		} else {
+			set = style.addAttribute(set,StyleConstants.FontSize,12);
+		}
+		
+/*		StyledDocument doc = (StyledDocument) output.getDocument();
+		try {
+			doc.insertString(doc.getLength(), msg, set);
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+		}*/
+		int length = output.getDocument().getLength();
+		output.setCaretPosition(length);
+		output.setCharacterAttributes(set, false);
+		output.replaceSelection(msg);
+		
+		output.setEditable(false);
 	}
 
 }

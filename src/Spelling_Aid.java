@@ -11,6 +11,7 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -44,7 +45,8 @@ public class Spelling_Aid extends JFrame {
 	private Quiz _quiz;
 	private Statistics _statistics;
 	@SuppressWarnings("rawtypes")
-	private JComboBox selectLV;
+	protected JComboBox selectLV;
+	private JComboBox reviewLV;
 	@SuppressWarnings("rawtypes")
 	private JComboBox selectVoices;
 	private int _level = 1;
@@ -67,8 +69,10 @@ public class Spelling_Aid extends JFrame {
 	private JButton settings = new JButton("Settings");
 	private JButton changeSpeed = new JButton("Change Speaker Speed");
 	private String _defaultSpeed = "(Parameter.set 'Duration_Stretch 1.0)";
+	private String _repeatSpeed = "(Parameter.set 'Duration_Stretch 1.5)";
 	private final JButton btnHelp = new JButton("Help");
 	private final JFileChooser fileSelector = new JFileChooser();
+	private int _minLevel;
 
 	public static void main(String[] Args) {
 		SwingUtilities.invokeLater(new Runnable() {
@@ -116,17 +120,22 @@ public class Spelling_Aid extends JFrame {
 			// Original code by Hunter
 			for (String text : texts) {
 
-				if ((text.equals("Correct") || text.equals("Incorrect, please try again") || text.equals("Incorrect"))) {
+				if ((text.equals("Correct") || text.equals("Incorrect, please try again") || text.equals("Incorrect") || text.equals("Please spell the word, "))) {
 					bw.write(_defaultSpeed);
 					bw.newLine();
 
+				} else if (text.contains("repeat")) {
+					bw.write(_repeatSpeed);
+					bw.newLine();
+					String[] textArray = text.split(" ");
+					text = textArray[1];
+					
 				} else if (_selectedSpeed != null) {
 					bw.write(_selectedSpeed);
 					bw.newLine();
 
-
 				}
-
+				
 				bw.write("(SayText \"" + text + "\")");
 				bw.newLine();
 
@@ -305,23 +314,30 @@ public class Spelling_Aid extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 
-				// Asks the user to select a level to start at once they click Start Quiz
-				int response = JOptionPane.showConfirmDialog(null, selectLV, "Please select a level", JOptionPane.OK_CANCEL_OPTION);
+				selectLV.setSelectedItem("Level " + _level);
+				
+				if(selectLV.getItemCount() == 0){
+					JOptionPane.showMessageDialog(null,"The spelling list does not exist or is empty, please put the default spelling list in the working directory or select another list in the settings");
+				} else {
+					// Asks the user to select a level to start at once they click Start Quiz
+					int response = JOptionPane.showConfirmDialog(null, selectLV, "Please select a level", JOptionPane.OK_CANCEL_OPTION);
 
-				if (response == JOptionPane.OK_OPTION) {
-					
-					String file;
-					
-					if(_filePath == null){
-						file = _defaultFile;
-					} else {
-						file = _filePath;
-					}
-					
-					// Starts a new quiz and hides the main menu
-					_quiz = new Quiz(Quiz.quizType.QUIZ, Spelling_Aid.this, _level, file);
-					setVisible(false);
-					_quiz.startQuiz();
+					if (response == JOptionPane.OK_OPTION) {
+						
+						String file;
+						
+						if(_filePath == null){
+							file = _defaultFile;
+						} else {
+							file = _filePath;
+						}
+						
+						// Starts a new quiz and hides the main menu
+						_quiz = new Quiz(Quiz.quizType.QUIZ, Spelling_Aid.this, _level, file);
+						setVisible(false);
+						_quiz.startQuiz();
+				}
+				
 				}
 			}
 
@@ -331,14 +347,21 @@ public class Spelling_Aid extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// Asks the user to select a level to review, then starts a new review and hides the main menu
-				int response = JOptionPane.showConfirmDialog(null, selectLV, "Please select a level", JOptionPane.OK_CANCEL_OPTION);
+				updateReviewLevel();
+				
+				if(reviewLV.getItemCount() == 0){
+					JOptionPane.showMessageDialog(null,"The failed list is empty, please attempt the quiz");
+				} else {
+					
+					// Asks the user to select a level to review, then starts a new review and hides the main menu
+					int response = JOptionPane.showConfirmDialog(null, reviewLV, "Please select a level", JOptionPane.OK_CANCEL_OPTION);
 
-				if (response == JOptionPane.OK_OPTION) {
-
-					_quiz = new Quiz(Quiz.quizType.REVIEW, Spelling_Aid.this, _level, null);
-					setVisible(false);
-					_quiz.startQuiz();
+					if (response == JOptionPane.OK_OPTION) {
+						
+						_quiz = new Quiz(Quiz.quizType.REVIEW, Spelling_Aid.this, _level, null);
+						setVisible(false);
+						_quiz.startQuiz();
+					}
 				}
 
 			}
@@ -391,7 +414,19 @@ public class Spelling_Aid extends JFrame {
 		// Original code by David
 		String[] subDirectories = listDirectories(_voicePath + "/english");
 		for(String voices : subDirectories){
+			switch (voices) {
+			case "kal_diphone":
+				voices = "CMU US KAL voice";
+				break;
+			case "rab_diphone":
+				voices = "CSTR UK RAB voice";
+				break;
+			case "akl_nz_jdt_diphone":
+				voices = "Auckland NZ JDT voice";
+				break;
+			}
 			_availableVoices.add(voices);
+			
 		}
 
 		selectVoices = new JComboBox(_availableVoices.toArray());
@@ -404,6 +439,7 @@ public class Spelling_Aid extends JFrame {
 				_selectedVoice = selectedvoice;
 			}
 		});
+		
 
 		menu.add(quiz);
 		menu.add(review);
@@ -740,7 +776,20 @@ public class Spelling_Aid extends JFrame {
 	 * @param voice The voice to set
 	 */
 	public void setVoice(String voice){
-		_voice = "(voice_" + voice + ")";
+		if(voice != null){
+			switch (voice) {
+			case "CMU US KAL voice":
+				voice = "kal_diphone";
+				break;
+			case "CSTR UK RAB voice":
+				voice = "rab_diphone";
+				break;
+			case "Auckland NZ JDT voice":
+				voice = "akl_nz_jdt_diphone";
+				break;
+			}
+			_voice = "(voice_" + voice + ")";
+		}
 	}
 
 	/**
@@ -755,16 +804,20 @@ public class Spelling_Aid extends JFrame {
 	public ArrayList<String> scanLevels(String wordlist){
 		ArrayList<String> all = readList(new File(wordlist));
 		ArrayList<String> levels = new ArrayList<String>();
-
+		int i = 0;
 		for(String content: all){
 			if(content.startsWith("%Level")){
+				if(i == 0){
+					_minLevel = Integer.parseInt(content.split(" ")[1]);
+				}
 				levels.add("Level " + content.split(" ")[1]);
 				if (Integer.parseInt(content.split(" ")[1]) > maxLevel) {
 					maxLevel = Integer.parseInt(content.split(" ")[1]);
 				}
+				i++;
 			}
 		}
-
+		_level = _minLevel;
 		return levels;
 	}
 	
@@ -772,7 +825,7 @@ public class Spelling_Aid extends JFrame {
 		// Finds out all of the levels in the word list and stores in a JComboBox
 		// Original code by David
 		selectLV = new JComboBox(scanLevels(file).toArray());
-
+		
 		// Adds an ActionListener to the JComboBox to extract the level and save it in the _level field
 		selectLV.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
@@ -782,5 +835,39 @@ public class Spelling_Aid extends JFrame {
 				_level = Integer.parseInt(level[1]);
 			}
 		});
+	}
+	
+	public ArrayList<String> reviewLevels(){
+		ArrayList<String> all = readList(new File(".failed"));
+		ArrayList<Integer> levels = new ArrayList<Integer>();
+		ArrayList<String> list = new ArrayList<String>();
+
+		for(String content: all){
+			int level = Integer.parseInt(content.split("	")[1]);
+			if(!levels.contains(level)){
+				levels.add(level);
+			}	
+		}
+
+		Collections.sort(levels);
+		
+		for(int level : levels){
+			list.add("Level " + level);
+		}
+		
+		if(!levels.isEmpty()){
+		  _level = levels.get(0);
+		}
+		return list;
+	}
+	
+	public void updateReviewLevel(){
+
+		ArrayList<String> failedList = reviewLevels();
+		
+		reviewLV = new JComboBox(failedList.toArray());
+		
+		// Adds an ActionListener to the JComboBox to extract the level and save it in the _level field
+		reviewLV.addActionListener(selectLV.getActionListeners()[0]);
 	}
 }
