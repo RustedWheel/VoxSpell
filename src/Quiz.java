@@ -45,7 +45,7 @@ public class Quiz {
 	private JButton restart = new JButton("Restart");
 	protected JButton submit = new JButton("Submit");
 	private JButton close = new JButton("Main Menu");
-	
+	private JComboBox next;
 	private JButton nextLevel = new JButton("Next level");
 	private JButton videoReward = new JButton("Reward");
 	private JTextPane output = new JTextPane();;
@@ -73,6 +73,7 @@ public class Quiz {
 		_spelling_Aid = spelling_Aid;
 		_level = level;
 		_file = file;
+		next = _spelling_Aid.selectLV;
 	}
 
 	/**
@@ -239,10 +240,10 @@ public class Quiz {
 					if (_level < _spelling_Aid.maxLevel) {
 						JOptionPane.showMessageDialog(new JFrame(),
 								"You have gotten " + numberCorrect
-								+ " words correct out of 10, you may choose to play a video reward, or proceed directly to the next level",
+								+ " words correct out of 10, you may choose to play a video reward, or choose the next level to proceed",
 								"Pass", JOptionPane.INFORMATION_MESSAGE);
 						nextLevel.setEnabled(true);
-						appendToOutput("\nQuiz complete\nPress Restart to start another quiz on the current level\nPress Next Level to proceed to the next level\nPress Main menu to exit\n",new Color(51, 47, 47),false);
+						appendToOutput("\nQuiz complete\nPress Restart to start another quiz on the current level\nPress Next Level to select the next level to proceed\nPress Main menu to exit\n",new Color(51, 47, 47),false);
 					} else {
 						JOptionPane.showMessageDialog(new JFrame(),
 								"You have gotten " + numberCorrect
@@ -482,7 +483,7 @@ public class Quiz {
 
 			// The next level is started
 			// Original code by Hunter
-			nextLevel.addActionListener(new ActionListener() {
+/*			nextLevel.addActionListener(new ActionListener() {
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -496,7 +497,44 @@ public class Quiz {
 					startQuiz();
 				}
 
+			});*/
+			
+			nextLevel.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					
+					next.setSelectedItem("Level " + _level);
+					
+					int response = JOptionPane.showConfirmDialog(null, next, "Please select the next level", JOptionPane.OK_CANCEL_OPTION);
+					
+					if (response == JOptionPane.OK_OPTION) {
+						nextLevel.setEnabled(false);
+						videoReward.setEnabled(false);
+						restart.setEnabled(false);
+
+						incorrectWords.clear();
+						output.setText("");
+						startQuiz();
+					}
+
+				}
+
 			});
+			
+			
+			
+			
+			next.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent evt) {
+					JComboBox lv = (JComboBox) evt.getSource();
+					String selectedlv = (String) lv.getSelectedItem();
+					String[] level = selectedlv.split(" ");
+					_level = Integer.parseInt(level[1]);
+					
+				}
+			});
+			
 		}
 
 		frame.setResizable(false);
