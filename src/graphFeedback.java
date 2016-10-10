@@ -25,11 +25,11 @@ import org.jfree.chart.plot.PiePlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.category.LineAndShapeRenderer;
-import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.general.PieDataset;
 
+@SuppressWarnings("serial")
 public class graphFeedback extends JDialog {
 
 	private final JPanel contentPanel = new JPanel();
@@ -38,13 +38,6 @@ public class graphFeedback extends JDialog {
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		/*try {
-			graphFeedback dialog = new graphFeedback();
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}*/
 	}
 
 	/**
@@ -61,26 +54,25 @@ public class graphFeedback extends JDialog {
 		JPanel sidePanel = new JPanel(new BorderLayout());
 		sidePanel.setBackground(new Color(240, 240, 240, 255));
 		
+		//Creates the line graph
 		DefaultCategoryDataset lineData = newLineDataset(levelScores);
 		JFreeChart scoreAttemptChart = LineChart(lineData);
 		ChartPanel chartPanel = new ChartPanel(scoreAttemptChart);
 		chartPanel.setPreferredSize(new java.awt.Dimension(500, 300));
-		/*chartPanel.setBorder(new MatteBorder(1,1,1,1, (Color) new Color(83, 104, 120, 255)));*/
 		contentPanel.add(chartPanel,BorderLayout.EAST);
 		
+		//Creates the pie chart
 		PieDataset pieData = newPieDataset(levelStats);
 		JFreeChart pieChart = PieChart(pieData);
 		ChartPanel pieChartPanel = new ChartPanel(pieChart);
 		pieChartPanel.setPreferredSize(new java.awt.Dimension(380, 300));
-		/*pieChartPanel.setBorder(new MatteBorder(1,1,1,1, (Color) new Color(83, 104, 120, 255)));*/
 		sidePanel.add(pieChartPanel,BorderLayout.NORTH);
 		
-		
+		//Creates the bar chart
 		DefaultCategoryDataset barDataset = NewBarDataset(levelScores);
 		JFreeChart barChart = NewBarChart(barDataset);
 		ChartPanel barChartPanel = new ChartPanel(barChart);
 		barChartPanel.setPreferredSize(new java.awt.Dimension(380, 300));
-		/*barChartPanel.setBorder(new MatteBorder(1,1,1,1, (Color) new Color(83, 104, 120, 255)));*/
 		sidePanel.add(barChartPanel,BorderLayout.SOUTH);
 		
 		contentPanel.add(sidePanel,BorderLayout.WEST);
@@ -88,10 +80,9 @@ public class graphFeedback extends JDialog {
 		contentPanel.setBorder(new MatteBorder(1,1,1,1, (Color) new Color(83, 104, 120, 255)));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		{
+			//Add a new back button
 			JPanel buttonPane = new JPanel();
-			/*buttonPane.setBackground(new Color(240, 240, 240, 255));*/
-			buttonPane.setLayout(new FlowLayout(/*FlowLayout.RIGHT*/));
-			/*buttonPane.setBorder(new MatteBorder(1,0,0,0, (Color) new Color(83, 104, 120, 255)));*/
+			buttonPane.setLayout(new FlowLayout());
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
 			{
 				JButton backButton = new JButton("Back");
@@ -124,6 +115,7 @@ public class graphFeedback extends JDialog {
 	}
 	
 	private JFreeChart LineChart(DefaultCategoryDataset dataset){
+		//Creates the line graph and sets its axis and colours
 		JFreeChart lineChart = ChartFactory.createLineChart(
 				"Score Vs Attempt", 
 				"Number of Attempt",
@@ -159,6 +151,7 @@ public class graphFeedback extends JDialog {
 	}
 	
 	private JFreeChart PieChart(PieDataset dataset){
+		//Creates the pie chart and sets its axis and colours
 		JFreeChart pieChart = ChartFactory.createPieChart(
 				"Percentage of times passed Vs percentage of times \n fail the level", 
 				dataset,
@@ -193,6 +186,7 @@ public class graphFeedback extends JDialog {
 	}
 	
 	private JFreeChart NewBarChart(DefaultCategoryDataset dataset) {
+		//Creates the bar chart and sets its axis and colours
 		final JFreeChart chart = ChartFactory.createBarChart(
 				"Number of mastered and failed words for each attempt", 
 				"Number of attempt", 

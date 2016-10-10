@@ -32,7 +32,7 @@ public class VideoPlayer {
         final EmbeddedMediaPlayer video = mediaPlayerComponent.getMediaPlayer();
         
         frame.add(mediaPlayerComponent);
-
+        
         final JButton pause = new JButton("Pause");
         JButton exit = new JButton("Exit");
         final JProgressBar progress = new JProgressBar();

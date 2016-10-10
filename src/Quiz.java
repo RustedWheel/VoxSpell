@@ -10,9 +10,9 @@ import java.awt.event.WindowListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Random;
-
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -26,12 +26,9 @@ import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.ColorUIResource;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
-import javax.swing.text.StyledDocument;
 
 public class Quiz {
 
@@ -45,9 +42,11 @@ public class Quiz {
 	private JButton restart = new JButton("Restart");
 	protected JButton submit = new JButton("Submit");
 	private JButton close = new JButton("Main Menu");
+	@SuppressWarnings("rawtypes")
 	private JComboBox next;
 	private JButton nextLevel = new JButton("Next level");
-	private JButton videoReward = new JButton("Reward");
+	private JButton videoReward = new JButton("Video Reward");
+	private JButton Reward = new JButton("Rewards");
 	private JTextPane output = new JTextPane();;
 	private String currentWord = "";
 	protected int attempts;
@@ -62,10 +61,11 @@ public class Quiz {
 	protected JButton repeat = new JButton("Repeat");
 	protected boolean repeated;
 	private String _file;
-
+	private JButton Audio = new JButton("Audio Reward");
 	private int _level;
 	private JLabel levelStats = new JLabel();
 	protected boolean correct;
+	private JDialog dialog;
 
 	public Quiz(quizType type, Spelling_Aid spelling_Aid, int level, String file) {
 
@@ -236,11 +236,11 @@ public class Quiz {
 
 					// If they pass the level then the user can move on to the next level or play a video reward
 					// If they are on the last level, then they are able to play the bonus video reward
-					videoReward.setEnabled(true);
+					Reward.setEnabled(true);
 					if (_level < _spelling_Aid.maxLevel) {
 						JOptionPane.showMessageDialog(new JFrame(),
 								"You have gotten " + numberCorrect
-								+ " words correct out of 10, you may choose to play a video reward, or choose the next level to proceed",
+								+ " words correct out of 10, you may choose to play a video or audio reward, or choose the next level to proceed",
 								"Pass", JOptionPane.INFORMATION_MESSAGE);
 						nextLevel.setEnabled(true);
 						appendToOutput("\nQuiz complete\nPress Restart to start another quiz on the current level\nPress Next Level to select the next level to proceed\nPress Main menu to exit\n",new Color(51, 47, 47),false);
@@ -315,7 +315,7 @@ public class Quiz {
 
 				if (correct) {
 					previousCorrect.add("Correct");
-					appendToOutput("Correct\n\n",new Color(44,115,58),false);
+					appendToOutput("Correct ✓\n\n",new Color(44,115,58),false);
 					/* _spelling_Aid.appendList(currentWord, attempts, true); */
 				} else {
 					if (attempts == 1) {
@@ -323,7 +323,7 @@ public class Quiz {
 						// allowed to spell the word again
 						ArrayList<String> text = new ArrayList<String>();
 						text.add("Incorrect, please try again");
-						appendToOutput("Incorrect, please try again\n\n",new Color(148,48,48),false);
+						appendToOutput("Incorrect, please try again X\n\n",new Color(148,48,48),false);
 						text.add(currentWord);
 						text.add(currentWord);
 						_spelling_Aid.textToSpeech(text);
@@ -333,7 +333,7 @@ public class Quiz {
 						// failed
 						previousCorrect.add("Incorrect");
 
-						appendToOutput("Incorrect\n\n",new Color(148,48,48),false);
+						appendToOutput("Incorrect X\n\n",new Color(148,48,48),false);
 						_spelling_Aid.appendFailed(currentWord, _level);
 
 						// If the user is in review mode, they are given an
@@ -360,12 +360,12 @@ public class Quiz {
 
 									if (correct) {
 										previousCorrect.add("Correct");
-										appendToOutput("Correct\n\n",new Color(44,115,58),false);
+										appendToOutput("Correct ✓\n\n",new Color(44,115,58),false);
 
 									} else {
 
 										previousCorrect.add("Incorrect");
-										appendToOutput("Incorrect\n\n",new Color(148,48,48),false);
+										appendToOutput("Incorrect X\n\n",new Color(148,48,48),false);
 
 									}
 
@@ -413,7 +413,7 @@ public class Quiz {
 				output.setText("");
 				startQuiz();
 				nextLevel.setEnabled(false);
-				videoReward.setEnabled(false);
+				Reward.setEnabled(false);
 				restart.setEnabled(false);
 			}
 
@@ -463,11 +463,12 @@ public class Quiz {
 
 		// Sets up the listeners for reward and next level buttons if the quiz type is quiz
 		if (_type == quizType.QUIZ) {
+			
 			videoReward.addActionListener(new ActionListener() {
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					videoReward.setEnabled(false);
+					
 					if (_level < _spelling_Aid.maxLevel) {
 						@SuppressWarnings("unused")
 						VideoPlayer video = new VideoPlayer(Quiz.this, "resources/big_buck_bunny_1_minute.avi");
@@ -477,28 +478,46 @@ public class Quiz {
 						VideoPlayer video = new VideoPlayer(Quiz.this, "resources/bonus_reward.avi");
 					}
 					frame.setVisible(false);
+					Reward.setEnabled(false);
+					dialog.setVisible(false);
 				}
 
 			});
-
-			// The next level is started
-			// Original code by Hunter
-/*			nextLevel.addActionListener(new ActionListener() {
+			
+			Audio.addActionListener(new ActionListener() {
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					nextLevel.setEnabled(false);
-					videoReward.setEnabled(false);
-					restart.setEnabled(false);
-
-					incorrectWords.clear();
-					output.setText("");
-					_level++;
-					startQuiz();
+					
+					@SuppressWarnings("unused")
+					VideoPlayer video = new VideoPlayer(Quiz.this, "resources/AudioReward.wav");
+					
+					frame.setVisible(false);
+					Reward.setEnabled(false);
+					dialog.setVisible(false);
 				}
 
-			});*/
+			});
 			
+			
+			final Object[] RewardOptions = {videoReward, Audio};
+			JOptionPane messagePane = new JOptionPane(
+				    RewardOptions,
+		            JOptionPane.INFORMATION_MESSAGE);
+			dialog = messagePane.createDialog(null, "Rewards");
+			
+			Reward.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					dialog.setVisible(true);
+				}
+
+			});
+			
+			
+
+			//Select the next level to go to
 			nextLevel.addActionListener(new ActionListener() {
 
 				@Override
@@ -523,10 +542,9 @@ public class Quiz {
 			});
 			
 			
-			
-			
 			next.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent evt) {
+					@SuppressWarnings("rawtypes")
 					JComboBox lv = (JComboBox) evt.getSource();
 					String selectedlv = (String) lv.getSelectedItem();
 					String[] level = selectedlv.split(" ");
@@ -603,11 +621,12 @@ public class Quiz {
 		// by Hunter
 		if (_type == quizType.QUIZ) {
 			options.add(nextLevel);
-			options.add(videoReward);
+			options.add(Reward);
+			/*options.add(videoReward);*/
 		}
 
 		nextLevel.setEnabled(false);
-		videoReward.setEnabled(false);
+		Reward.setEnabled(false);
 		restart.setEnabled(false);
 
 		frame.add(panel, BorderLayout.NORTH);
@@ -646,6 +665,9 @@ public class Quiz {
 		}
 	}
 	
+	/**
+	 * This method appends text onto the output
+	 */
 	private void appendToOutput(String msg, Color c, boolean bold){
 		output.setEditable(true);
 		
@@ -667,12 +689,6 @@ public class Quiz {
 			set = style.addAttribute(set,StyleConstants.FontSize,12);
 		}
 		
-/*		StyledDocument doc = (StyledDocument) output.getDocument();
-		try {
-			doc.insertString(doc.getLength(), msg, set);
-		} catch (BadLocationException e) {
-			e.printStackTrace();
-		}*/
 		int length = output.getDocument().getLength();
 		output.setCaretPosition(length);
 		output.setCharacterAttributes(set, false);

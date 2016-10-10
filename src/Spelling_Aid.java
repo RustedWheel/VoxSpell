@@ -20,7 +20,6 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
-import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
@@ -31,7 +30,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.JLabel;
 import javax.swing.ImageIcon;
 import java.awt.Color;
-import java.awt.SystemColor;
 import java.awt.Font;
 import javax.swing.SwingConstants;
 
@@ -46,13 +44,14 @@ public class Spelling_Aid extends JFrame {
 	private Statistics _statistics;
 	@SuppressWarnings("rawtypes")
 	protected JComboBox selectLV;
+	@SuppressWarnings("rawtypes")
 	private JComboBox reviewLV;
 	@SuppressWarnings("rawtypes")
 	private JComboBox selectVoices;
 	private int _level = 1;
 	private ArrayList<String> _availableVoices = new ArrayList<String>();
 	private String _voicePath = "/usr/share/festival/voices";
-	private String _defaultFile = "NZCER-spelling-lists.txt";
+	private String _defaultFile = "resources/NZCER-spelling-lists.txt";
 	private String _filePath = null;
 	private JButton exit = new JButton("Exit");
 	private JButton changeVoice = new JButton("Change Speaker Voice");
@@ -317,7 +316,7 @@ public class Spelling_Aid extends JFrame {
 				selectLV.setSelectedItem("Level " + _level);
 				
 				if(selectLV.getItemCount() == 0){
-					JOptionPane.showMessageDialog(null,"The spelling list does not exist or is empty, please put the default spelling list in the working directory or select another list in the settings");
+					JOptionPane.showMessageDialog(null,"The spelling list does not exist or is empty, please put the default spelling list in the resource directory or select another list in the settings");
 				} else {
 					// Asks the user to select a level to start at once they click Start Quiz
 					int response = JOptionPane.showConfirmDialog(null, selectLV, "Please select a level", JOptionPane.OK_CANCEL_OPTION);
@@ -480,7 +479,7 @@ public class Spelling_Aid extends JFrame {
 
 		});
 
-		final Object[] Options = {changeVoice, changeSpeed, SelectFile };
+		final Object[] Options = {changeVoice, changeSpeed, SelectFile};
 		
 		FileNameExtensionFilter filter = new FileNameExtensionFilter("TEXT FILES", "txt", "text");
 		fileSelector.setFileFilter(filter);
@@ -492,6 +491,7 @@ public class Spelling_Aid extends JFrame {
 				
 				int result = fileSelector.showOpenDialog(SelectFile);
 				if (result == JFileChooser.APPROVE_OPTION) {
+					clearStatistics();
 				    File selectedFile = fileSelector.getSelectedFile();
 				    _filePath = selectedFile.getAbsolutePath();
 				    updateSelectLevel(_filePath);
@@ -540,7 +540,7 @@ public class Spelling_Aid extends JFrame {
 			}
 
 		});
-		
+		 
 		btnHelp.setFont(new Font("SansSerif", Font.PLAIN, 14));
 		btnHelp.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -549,10 +549,9 @@ public class Spelling_Aid extends JFrame {
 		});
 		welcomeScreen.setLayout(new BorderLayout(0, 0));
 		
-		
+		//Creates the VoxSpekk logo
 		JLabel logoLabel = new JLabel();
 		logoLabel.setBounds(0, 21, 388, 156);
-		/*getContentPane().add(logoLabel);*/
 		welcomeScreen.add(logoLabel, BorderLayout.CENTER);
 		ImageIcon oldLogo = new ImageIcon(Spelling_Aid.class.getResource("/img/VoxSpell.png"));
 		Image img = oldLogo.getImage();
@@ -821,6 +820,7 @@ public class Spelling_Aid extends JFrame {
 		return levels;
 	}
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void updateSelectLevel(String file){
 		// Finds out all of the levels in the word list and stores in a JComboBox
 		// Original code by David
@@ -837,6 +837,14 @@ public class Spelling_Aid extends JFrame {
 		});
 	}
 	
+	/**
+	 * This method scans all of the levels inside the failed list
+	 * 
+	 * Original code by David
+	 * 
+	 * @param null
+	 * @return An ArrayList of levels inside the failed list
+	 */
 	public ArrayList<String> reviewLevels(){
 		ArrayList<String> all = readList(new File(".failed"));
 		ArrayList<Integer> levels = new ArrayList<Integer>();
@@ -861,6 +869,11 @@ public class Spelling_Aid extends JFrame {
 		return list;
 	}
 	
+	
+	/**
+	 * Updates the levels within the review JComboBox
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void updateReviewLevel(){
 
 		ArrayList<String> failedList = reviewLevels();
