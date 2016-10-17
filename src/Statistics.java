@@ -5,8 +5,8 @@ import java.awt.Font;
 import java.awt.Paint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
+/*import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;*/
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -35,12 +35,15 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
 
-public class Statistics {
+import utility.FileContentReader;
 
-	private JFrame frame;
+@SuppressWarnings("serial")
+public class Statistics extends JPanel {
+	
+	private Gui _frame;
 	private JButton close = new JButton("Main Menu");
 	private JButton statDetail = new JButton("Graphical feedback");
-	private Spelling_Aid _spelling_Aid;
+	/*private MainMenu _spelling_Aid;*/
 	private JTable table;
 	private static DecimalFormat df = new DecimalFormat("#.#");
 	private final static String[] columns = { "Level", "Passed", "Failed", "Average Score", "Total Attempts", "Highest Score" };
@@ -48,10 +51,10 @@ public class Statistics {
 	private HashMap<Integer, ArrayList<Integer>> scores = new HashMap<Integer, ArrayList<Integer>>();
 	private ChartPanel chartPanel = null;
 
-	public Statistics(Spelling_Aid spelling_Aid) {
-		_spelling_Aid = spelling_Aid;
+	public Statistics(Gui frame) {
+		_frame = frame;
+		setLayout(new BorderLayout());
 		statDetail.setEnabled(false);
-
 		statDetail.addActionListener(new ActionListener() {
 
 			@Override
@@ -81,54 +84,18 @@ public class Statistics {
 
 		if (table != null) {
 
-			frame = new JFrame("Statistics");
-			frame.setSize(900, 400);
-			frame.setLocationRelativeTo(null);
-			frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
-			// Adds a listener to display the main menu once the statistics is
-			// closed
-			frame.addWindowListener(new WindowListener() {
-
-				@Override
-				public void windowOpened(WindowEvent e) {
-				}
-
-				@Override
-				public void windowClosing(WindowEvent e) {
-				}
-
-				@Override
-				public void windowClosed(WindowEvent e) {
-					_spelling_Aid.setVisible(true);
-				}
-
-				@Override
-				public void windowIconified(WindowEvent e) {
-				}
-
-				@Override
-				public void windowDeiconified(WindowEvent e) {
-				}
-
-				@Override
-				public void windowActivated(WindowEvent e) {
-				}
-
-				@Override
-				public void windowDeactivated(WindowEvent e) {
-				}
-
-			});
-
 			// Disposes the JFrame and unhides the main menu once the "Main
 			// Menu" button is pressed
 			close.addActionListener(new ActionListener() {
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					frame.dispose();
-					_spelling_Aid.setVisible(true);
+					_frame.getContentPane().removeAll();
+					MainMenu menu = new MainMenu(_frame);
+					_frame.setSize(500, 525);
+					_frame.getContentPane().add(menu);
+					_frame.revalidate();
+					_frame.repaint();
 				}
 
 			});
@@ -144,14 +111,13 @@ public class Statistics {
 			JScrollPane scroll = new JScrollPane(table);
 			scroll.setBackground(new Color(214, 217, 223));
 			scroll.setPreferredSize(new java.awt.Dimension(500, 270));
-			frame.add(chartPanel, BorderLayout.EAST);
-			frame.add(scroll, BorderLayout.WEST);
+			add(chartPanel, BorderLayout.EAST);
+			add(scroll, BorderLayout.WEST);
 
 			// Finally displays the JFrame containing the statistics
-			frame.add(options, BorderLayout.SOUTH);
-			frame.setResizable(false);
-			frame.setBackground(new Color(214, 217, 223));
-			frame.setVisible(true);
+			add(options, BorderLayout.SOUTH);
+			setBackground(new Color(214, 217, 223));
+			setVisible(true);
 
 		}
 	}
@@ -161,12 +127,13 @@ public class Statistics {
 	 */
 	private void calculateStats() {
 		// Reads the current results
-		ArrayList<String> results = _spelling_Aid.readList(new File(".results"));
+		FileContentReader reader = new FileContentReader();
+		ArrayList<String> results = reader.readList(new File(".results"));
 
 		// Displays an error message if there are no statistics to be shown
 		if (results.size() == 0) {
 			JOptionPane.showMessageDialog(new JFrame(), "Error, no results saved", "Error", JOptionPane.ERROR_MESSAGE);
-			_spelling_Aid.setVisible(true);
+			/*_spelling_Aid.setVisible(true);*/
 		} else {
 			// array representing passed, failed and total score and highest score
 			ArrayList<Integer> levels = new ArrayList<Integer>();
@@ -306,7 +273,6 @@ public class Statistics {
 		return dataset;
 	}
 
-	@SuppressWarnings("serial")
 	public class Model extends DefaultTableModel {
 
 		//Creates the table model to disallow editing

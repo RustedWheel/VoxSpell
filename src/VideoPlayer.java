@@ -16,14 +16,11 @@ import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer;
 public class VideoPlayer {
 	
     private final EmbeddedMediaPlayerComponent mediaPlayerComponent;
-	private Quiz _quiz;
 
 	/*
 	 * Original code by Hunter
 	 */
-    public VideoPlayer(Quiz quiz, String filename) {
-    	
-    	_quiz = quiz;
+    public VideoPlayer(String filename) {
     
         final JFrame frame = new JFrame("Level up Reward");
 
@@ -72,7 +69,7 @@ public class VideoPlayer {
 			public void actionPerformed(ActionEvent e) {
 				video.stop();
 				frame.dispose();
-				_quiz.frame.setVisible(true);
+				/*_quiz.frame.setVisible(true);*/
 			}
         	
         });

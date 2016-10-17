@@ -5,8 +5,6 @@ import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Random;
@@ -30,18 +28,24 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 
-public class Quiz {
+import utility.Appendere;
+import utility.FileContentReader;
+
+@SuppressWarnings("serial")
+public class Quiz extends JPanel{
 
 	public enum quizType {
 		QUIZ, REVIEW;
 	}
 
 	private quizType _type;
-	private Spelling_Aid _spelling_Aid;
+	private Gui frame;
+	private Appendere appendere  = new Appendere();
 	private JTextField input = new JTextField();
 	private JButton restart = new JButton("Restart");
 	protected JButton submit = new JButton("Submit");
 	private JButton close = new JButton("Main Menu");
+	private JButton changeVoice = new JButton("Change Voice");
 	@SuppressWarnings("rawtypes")
 	private JComboBox next;
 	private JButton nextLevel = new JButton("Next level");
@@ -55,25 +59,28 @@ public class Quiz {
 	private ArrayList<String> incorrectWords = new ArrayList<String>();
 	private int size;
 	private int testNum;
-	protected JFrame frame;
 	private int numberCorrect;
 	private ArrayList<String> previousCorrect = new ArrayList<String>();
 	protected JButton repeat = new JButton("Repeat");
-	protected boolean repeated;
 	private String _file;
 	private JButton Audio = new JButton("Audio Reward");
 	private int _level;
 	private JLabel levelStats = new JLabel();
 	protected boolean correct;
 	private JDialog dialog;
+	FileContentReader reader = new FileContentReader();
+	private int _maxLevel;	
+	private boolean _finished = false;
+	@SuppressWarnings("rawtypes")
+	protected JComboBox selectVoices;
 
-	public Quiz(quizType type, Spelling_Aid spelling_Aid, int level, String file) {
-
+	public Quiz(quizType type, Gui guiFrame, int level, int maxLevel, String file) {
 		_type = type;
-		_spelling_Aid = spelling_Aid;
+		frame = guiFrame;
 		_level = level;
 		_file = file;
-		next = _spelling_Aid.selectLV;
+		_maxLevel = maxLevel;
+		
 	}
 
 	/**
@@ -87,20 +94,20 @@ public class Quiz {
 	 */
 	public void startQuiz() {
 
-		if (frame == null) {
+		if (this.getComponentCount() == 0) {
 			setUp();
 		}
 
 		switch (_type) {
 		case QUIZ:
 
-			words = _spelling_Aid.readLevel(new File(_file), _level);
+			words = reader.readLevel(new File(_file), _level);
 
 			break;
 
 		case REVIEW:
 			// reads the failed file and stores the words as a list
-			ArrayList<String> allFailed = _spelling_Aid.readList(new File(".failed"));
+			ArrayList<String> allFailed = reader.readList(new File(".failed"));
 			words.clear();
 
 			for (String word : allFailed) {
@@ -119,15 +126,14 @@ public class Quiz {
 			case QUIZ:
 				JOptionPane.showMessageDialog(new JFrame(), "Error, no words in level " + _level, "Error",
 						JOptionPane.ERROR_MESSAGE);
-				_spelling_Aid.setVisible(true);
-				frame.dispose();
+				
 				break;
 
 			case REVIEW:
 				JOptionPane.showMessageDialog(new JFrame(), "Error, no failed words saved for level " + _level, "Error",
 						JOptionPane.ERROR_MESSAGE);
-				_spelling_Aid.setVisible(true);
-				frame.dispose();
+				
+				/*frame.dispose();*/
 				break;
 			}
 		} else {
@@ -138,7 +144,7 @@ public class Quiz {
 				appendToOutput("Welcome to level " + _level + " of the quiz!\n\n",new Color(52, 80, 101),true);
 			}
 
-			frame.setVisible(true);
+			/*frame.setVisible(true);*/
 
 			// Determines the number of words to be quizzed, which is either
 			// 10 or the number of words in the list, if the list has less than 10
@@ -168,7 +174,6 @@ public class Quiz {
 		if (testNum <= size) {
 			correct = false;
 			attempts = 0;
-			repeated = false;
 
 			Random rand = new Random();
 			int wordNumber = (Math.abs(rand.nextInt()) % words.size());
@@ -194,13 +199,14 @@ public class Quiz {
 			// Speaks the word selected
 			previousCorrect.add("Please spell the word, ");
 			previousCorrect.add(currentWord);
-			_spelling_Aid.textToSpeech(previousCorrect);
+			frame.speaker.textToSpeech(previousCorrect);
 			previousCorrect.clear();
 
 		} else {
 			// Once the quiz is done, then the restart button is enabled
-			_spelling_Aid.textToSpeech(previousCorrect);
+			frame.speaker.textToSpeech(previousCorrect);
 			previousCorrect.clear();
+			_finished = true;
 
 			if (_type == quizType.QUIZ) {
 				// The user is given an option to see the words that they failed if they do not pass a level
@@ -227,17 +233,17 @@ public class Quiz {
 								"Your failed words", JOptionPane.INFORMATION_MESSAGE);
 					}
 
-					_spelling_Aid.appendList(_level, numberCorrect);
+					appendere.appendList(_level, numberCorrect);
 					appendToOutput("\nQuiz complete.\nPress Restart to start another quiz\nPress Main menu to exit\n\n",new Color(51, 47, 47),false);
 
 				} else {
 
-					_spelling_Aid.appendList(_level, numberCorrect);
+					appendere.appendList(_level, numberCorrect);
 
 					// If they pass the level then the user can move on to the next level or play a video reward
 					// If they are on the last level, then they are able to play the bonus video reward
 					Reward.setEnabled(true);
-					if (_level < _spelling_Aid.maxLevel) {
+					if (_level < _maxLevel) {
 						JOptionPane.showMessageDialog(new JFrame(),
 								"You have gotten " + numberCorrect
 								+ " words correct out of 10, you may choose to play a video or audio reward, or choose the next level to proceed",
@@ -256,7 +262,6 @@ public class Quiz {
 
 			}
 			restart.setEnabled(true);
-
 		}
 
 	}
@@ -269,19 +274,9 @@ public class Quiz {
 	 */
 	private void setUp() {
 
-		if (_type == quizType.QUIZ) {
-			frame = new JFrame("Quiz");
-		} else {
-			frame = new JFrame("Review");
-		}
-
-		frame.setSize(400, 450);
-		frame.setLocationRelativeTo(null);
-		
-		levelStats.setFont(new Font("SansSerif", Font.PLAIN, 14));
-		/*final DefaultStyledDocument doc = new DefaultStyledDocument();
-		output = new JTextPane(doc);*/
-		
+        setLayout(new BorderLayout());
+		frame.speaker.setQuiz(this);
+		levelStats.setFont(new Font("SansSerif", Font.PLAIN, 16));
 		EmptyBorder border = new EmptyBorder(new Insets(10,10,10,10));
 		output.setBorder(border);
 		output.setMargin(new Insets(5,5,5,5));
@@ -296,8 +291,11 @@ public class Quiz {
 				int choice = JOptionPane.showConfirmDialog(null, "Leave the current quiz and return to the main menu?",
 						"Exit quiz", JOptionPane.YES_NO_OPTION);
 				if (choice == JOptionPane.YES_OPTION) {
-					frame.dispose();
-					_spelling_Aid.setVisible(true);
+					frame.getContentPane().removeAll();
+					MainMenu menu = new MainMenu(frame);
+					frame.getContentPane().add(menu);
+					frame.revalidate();
+					frame.repaint();
 				}
 			}
 
@@ -326,7 +324,7 @@ public class Quiz {
 						appendToOutput("Incorrect, please try again X\n\n",new Color(148,48,48),false);
 						text.add(currentWord);
 						text.add(currentWord);
-						_spelling_Aid.textToSpeech(text);
+						frame.speaker.textToSpeech(text);
 
 					} else {
 						// Once they fail two times, the word is considered
@@ -334,14 +332,14 @@ public class Quiz {
 						previousCorrect.add("Incorrect");
 
 						appendToOutput("Incorrect X\n\n",new Color(148,48,48),false);
-						_spelling_Aid.appendFailed(currentWord, _level);
+						appendere.appendFailed(currentWord, _level);
 
 						// If the user is in review mode, they are given an
 						// opportunity to hear the
 						// word being spelled out and then allowed to spell it
 						// again
 						if (_type == quizType.REVIEW) {
-							_spelling_Aid.textToSpeech(previousCorrect);
+							frame.speaker.textToSpeech(previousCorrect);
 							previousCorrect.clear();
 
 							int choice = JOptionPane.showConfirmDialog(null,
@@ -350,7 +348,7 @@ public class Quiz {
 
 							if (choice == JOptionPane.YES_OPTION) {
 
-								_spelling_Aid.spellOut(currentWord);
+								frame.speaker.spellOut(currentWord);
 
 								String retry = JOptionPane.showInputDialog("Please spell the word again");
 
@@ -381,7 +379,7 @@ public class Quiz {
 				// If the user correctly spells a word, it is removed from their
 				// failed list
 				if (correct) {
-					_spelling_Aid.removeWord(currentWord + "\t" + _level);
+					appendere.removeWord(currentWord + "\t" + _level);
 					numberCorrect++;
 				}
 
@@ -415,52 +413,25 @@ public class Quiz {
 				nextLevel.setEnabled(false);
 				Reward.setEnabled(false);
 				restart.setEnabled(false);
+				_finished = false;
 			}
 
 		});
-
-		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-
-		frame.addWindowListener(new WindowListener() {
-
-			@Override
-			public void windowOpened(WindowEvent e) {
-			}
+		
+		selectVoices = frame.speaker.selectVoices;
+		changeVoice.addActionListener(new ActionListener() {
 
 			@Override
-			public void windowClosing(WindowEvent e) {
-				// unhides the main menu when the x button is pressed
-				int choice = JOptionPane.showConfirmDialog(null, "Leave the current quiz and return to the main menu?",
-						"Exit quiz", JOptionPane.YES_NO_OPTION);
-				if (choice == JOptionPane.YES_OPTION) {
-					frame.dispose();
-					_spelling_Aid.setVisible(true);
+			public void actionPerformed(ActionEvent e) {
+
+				int response = JOptionPane.showConfirmDialog(null, selectVoices, "Please select a voice to use", JOptionPane.OK_CANCEL_OPTION);
+				if (response == JOptionPane.OK_OPTION) {
+					frame.speaker.setVoice(frame.speaker.getSelectVoice());
 				}
-				
-			}
-
-			@Override
-			public void windowClosed(WindowEvent e) {
-			}
-
-			@Override
-			public void windowIconified(WindowEvent e) {
-			}
-
-			@Override
-			public void windowDeiconified(WindowEvent e) {
-			}
-
-			@Override
-			public void windowActivated(WindowEvent e) {
-			}
-
-			@Override
-			public void windowDeactivated(WindowEvent e) {
 			}
 
 		});
-
+		
 		// Sets up the listeners for reward and next level buttons if the quiz type is quiz
 		if (_type == quizType.QUIZ) {
 			
@@ -469,15 +440,15 @@ public class Quiz {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					
-					if (_level < _spelling_Aid.maxLevel) {
+					if (_level < _maxLevel) {
 						@SuppressWarnings("unused")
-						VideoPlayer video = new VideoPlayer(Quiz.this, "resources/big_buck_bunny_1_minute.avi");
+						VideoPlayer video = new VideoPlayer("big_buck_bunny_1_minute.avi");
 					} else {
 						// The bonus video is played if the level is the final level
 						@SuppressWarnings("unused")
-						VideoPlayer video = new VideoPlayer(Quiz.this, "resources/bonus_reward.avi");
+						VideoPlayer video = new VideoPlayer("bonus_reward.avi");
 					}
-					frame.setVisible(false);
+					/*frame.setVisible(false);*/
 					Reward.setEnabled(false);
 					dialog.setVisible(false);
 				}
@@ -490,9 +461,9 @@ public class Quiz {
 				public void actionPerformed(ActionEvent e) {
 					
 					@SuppressWarnings("unused")
-					VideoPlayer video = new VideoPlayer(Quiz.this, "resources/AudioReward.wav");
+					VideoPlayer video = new VideoPlayer("AudioReward.wav");
 					
-					frame.setVisible(false);
+					/*frame.setVisible(false);*/
 					Reward.setEnabled(false);
 					dialog.setVisible(false);
 				}
@@ -515,8 +486,6 @@ public class Quiz {
 
 			});
 			
-			
-
 			//Select the next level to go to
 			nextLevel.addActionListener(new ActionListener() {
 
@@ -531,7 +500,7 @@ public class Quiz {
 						nextLevel.setEnabled(false);
 						videoReward.setEnabled(false);
 						restart.setEnabled(false);
-
+						_finished = false;
 						incorrectWords.clear();
 						output.setText("");
 						startQuiz();
@@ -541,8 +510,7 @@ public class Quiz {
 
 			});
 			
-			
-			next.addActionListener(new ActionListener() {
+/*			next.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent evt) {
 					@SuppressWarnings("rawtypes")
 					JComboBox lv = (JComboBox) evt.getSource();
@@ -551,25 +519,15 @@ public class Quiz {
 					_level = Integer.parseInt(level[1]);
 					
 				}
-			});
-			
+			});*/
 		}
-
-		frame.setResizable(false);
 
 		JPanel panel = new JPanel(new BorderLayout());
 		JPanel options = new JPanel();
-
-		// Disables editing of the JTextArea
-		/*output.setEditable(false);*/
-		
 		
 		UIDefaults defaults = UIManager.getDefaults();
 		defaults.put("TextPane.background",new ColorUIResource(new Color(248, 248, 255)));
 		defaults.put("TextPane.inactiveBackground",new ColorUIResource(new Color(248, 248, 255)));
-/*		defaults.put("output.background",new ColorUIResource(new Color(248, 248, 255)));
-		defaults.put("output.inactiveBackground",new ColorUIResource(new Color(248, 248, 255)));*/
-		
 		defaults.put("TextPane[Enabled].backgroundPainter",new Color(248, 248, 255));
 		output.putClientProperty("Nimbus.Overrides",defaults);
 		output.putClientProperty("Nimbus.Overrides.InheritDefaults",true);
@@ -590,12 +548,11 @@ public class Quiz {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				repeated = true;
 				repeat.setEnabled(false);
 				submit.setEnabled(false);
 				ArrayList<String> text = new ArrayList<String>();
 				text.add("repeat " + currentWord);
-				_spelling_Aid.textToSpeech(text);
+				frame.speaker.textToSpeech(text);
 			}
 
 		});
@@ -603,23 +560,20 @@ public class Quiz {
 		repeat.setEnabled(false);
 		
 		quizOptions.add(repeat);
-
-		// If the quiz type is quiz, then the user's stats for the level are shown
-		// Original code by David
-		if (_type.equals(quizType.QUIZ)) {
-			panel.add(levelStats, BorderLayout.NORTH);
-		}
-
 		panel.add(input, BorderLayout.CENTER);
 		panel.add(quizOptions, BorderLayout.EAST);
 
 		options.add(close, JPanel.LEFT_ALIGNMENT);
+		options.add(changeVoice);
 		options.add(restart, JPanel.RIGHT_ALIGNMENT);
-
+		
+		// If the quiz type is quiz, then the user's stats for the level are shown
+		// Original code by David
 		// If the quiz type is quiz, then the options for the quiz include a next level button and
 		// video reward button
 		// by Hunter
 		if (_type == quizType.QUIZ) {
+			panel.add(levelStats, BorderLayout.NORTH);
 			options.add(nextLevel);
 			options.add(Reward);
 			/*options.add(videoReward);*/
@@ -629,9 +583,9 @@ public class Quiz {
 		Reward.setEnabled(false);
 		restart.setEnabled(false);
 
-		frame.add(panel, BorderLayout.NORTH);
-		frame.add(scroll, BorderLayout.CENTER);
-		frame.add(options, BorderLayout.SOUTH);
+		add(panel, BorderLayout.NORTH);
+		add(scroll, BorderLayout.CENTER);
+		add(options, BorderLayout.SOUTH);
 
 		// Sets the submit button as the default one so that the enter button can be used to submit
 		frame.getRootPane().setDefaultButton(submit);
@@ -684,9 +638,9 @@ public class Quiz {
 		}
 		
 		if(msg.contains("Welcome") && (msg.contains("level") || (msg.contains("review")))){
-			set = style.addAttribute(set,StyleConstants.FontSize,16);
+			set = style.addAttribute(set,StyleConstants.FontSize,18);
 		} else {
-			set = style.addAttribute(set,StyleConstants.FontSize,12);
+			set = style.addAttribute(set,StyleConstants.FontSize,14);
 		}
 		
 		int length = output.getDocument().getLength();
@@ -696,5 +650,8 @@ public class Quiz {
 		
 		output.setEditable(false);
 	}
-
+	
+	public boolean isQuizFinished(){
+		return _finished;
+	}
 }
