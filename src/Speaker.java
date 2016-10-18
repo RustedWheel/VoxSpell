@@ -24,12 +24,12 @@ public class Speaker {
 	private ArrayList<String> _availableVoices = new ArrayList<String>();
 	private String _voicePath = "/usr/share/festival/voices";
 	@SuppressWarnings("rawtypes")
-	protected JComboBox selectVoices;
+	private JComboBox selectVoices;
 	private String _selectedVoice;
 	private int _maxSpeed = 20;
 	private int _minSpeed = 5;
 	private int _initSpeed = 15;
-	protected JSlider voiceSpeed = new JSlider(JSlider.HORIZONTAL,_minSpeed,_maxSpeed,_initSpeed);
+	private JSlider voiceSpeed = new JSlider(JSlider.HORIZONTAL,_minSpeed,_maxSpeed,_initSpeed);
 	private double _speed;
 	private Quiz _quiz;
 
@@ -162,6 +162,14 @@ public class Speaker {
 		_selectedSpeed = speed;
 	}
 	
+	public JComboBox<?> getVoiceBox(){
+		return selectVoices;
+	}
+	
+	public JSlider getVoiceSlider(){
+		return voiceSpeed;
+	}
+	
 	/**
 	 * This method sets the voice field into a string that is able to be directly entered into a festival scm file
 	 * 
@@ -243,12 +251,14 @@ public class Speaker {
 
 			BashCommand.bashCommand("rm -f .text.scm");
 			
-			if(_quiz.attempts != 2 && _quiz.isQuizFinished() == false){
-				_quiz.submit.setEnabled(true);
-				_quiz.repeat.setEnabled(true);
-			} else {
-				_quiz.submit.setEnabled(false);
-				_quiz.repeat.setEnabled(false);
+			if(_quiz != null){
+				if(_quiz.attempts != 2 && _quiz.isQuizFinished() == false){
+					_quiz.submit.setEnabled(true);
+					_quiz.repeat.setEnabled(true);
+				} else {
+					_quiz.submit.setEnabled(false);
+					_quiz.repeat.setEnabled(false);
+				}
 			}
 		}
 

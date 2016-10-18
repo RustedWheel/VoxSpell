@@ -6,6 +6,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Random;
 import javax.swing.JButton;
@@ -19,10 +20,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
-import javax.swing.UIDefaults;
-import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
-import javax.swing.plaf.ColorUIResource;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -46,8 +44,6 @@ public class Quiz extends JPanel{
 	protected JButton submit = new JButton("Submit");
 	private JButton close = new JButton("Main Menu");
 	private JButton changeVoice = new JButton("Change Voice");
-	@SuppressWarnings("rawtypes")
-	private JComboBox next;
 	private JButton nextLevel = new JButton("Next level");
 	private JButton videoReward = new JButton("Video Reward");
 	private JButton Reward = new JButton("Rewards");
@@ -73,6 +69,7 @@ public class Quiz extends JPanel{
 	private boolean _finished = false;
 	@SuppressWarnings("rawtypes")
 	protected JComboBox selectVoices;
+	private static DecimalFormat df = new DecimalFormat("#.##");
 
 	public Quiz(quizType type, Gui guiFrame, int level, int maxLevel, String file) {
 		_type = type;
@@ -199,12 +196,12 @@ public class Quiz extends JPanel{
 			// Speaks the word selected
 			previousCorrect.add("Please spell the word, ");
 			previousCorrect.add(currentWord);
-			frame.speaker.textToSpeech(previousCorrect);
+			frame.getSpeaker().textToSpeech(previousCorrect);
 			previousCorrect.clear();
 
 		} else {
 			// Once the quiz is done, then the restart button is enabled
-			frame.speaker.textToSpeech(previousCorrect);
+			frame.getSpeaker().textToSpeech(previousCorrect);
 			previousCorrect.clear();
 			_finished = true;
 
@@ -275,7 +272,7 @@ public class Quiz extends JPanel{
 	private void setUp() {
 
         setLayout(new BorderLayout());
-		frame.speaker.setQuiz(this);
+		frame.getSpeaker().setQuiz(this);
 		levelStats.setFont(new Font("SansSerif", Font.PLAIN, 16));
 		EmptyBorder border = new EmptyBorder(new Insets(10,10,10,10));
 		output.setBorder(border);
@@ -324,7 +321,7 @@ public class Quiz extends JPanel{
 						appendToOutput("Incorrect, please try again X\n\n",new Color(148,48,48),false);
 						text.add(currentWord);
 						text.add(currentWord);
-						frame.speaker.textToSpeech(text);
+						frame.getSpeaker().textToSpeech(text);
 
 					} else {
 						// Once they fail two times, the word is considered
@@ -339,7 +336,7 @@ public class Quiz extends JPanel{
 						// word being spelled out and then allowed to spell it
 						// again
 						if (_type == quizType.REVIEW) {
-							frame.speaker.textToSpeech(previousCorrect);
+							frame.getSpeaker().textToSpeech(previousCorrect);
 							previousCorrect.clear();
 
 							int choice = JOptionPane.showConfirmDialog(null,
@@ -348,7 +345,7 @@ public class Quiz extends JPanel{
 
 							if (choice == JOptionPane.YES_OPTION) {
 
-								frame.speaker.spellOut(currentWord);
+								frame.getSpeaker().spellOut(currentWord);
 
 								String retry = JOptionPane.showInputDialog("Please spell the word again");
 
@@ -418,7 +415,7 @@ public class Quiz extends JPanel{
 
 		});
 		
-		selectVoices = frame.speaker.selectVoices;
+		selectVoices = frame.getSpeaker().getVoiceBox();
 		changeVoice.addActionListener(new ActionListener() {
 
 			@Override
@@ -426,7 +423,7 @@ public class Quiz extends JPanel{
 
 				int response = JOptionPane.showConfirmDialog(null, selectVoices, "Please select a voice to use", JOptionPane.OK_CANCEL_OPTION);
 				if (response == JOptionPane.OK_OPTION) {
-					frame.speaker.setVoice(frame.speaker.getSelectVoice());
+					frame.getSpeaker().setVoice(frame.getSpeaker().getSelectVoice());
 				}
 			}
 
@@ -461,7 +458,7 @@ public class Quiz extends JPanel{
 				public void actionPerformed(ActionEvent e) {
 					
 					@SuppressWarnings("unused")
-					VideoPlayer video = new VideoPlayer("AudioReward.wav");
+					VideoPlayer video = new VideoPlayer("audioReward.avi");
 					
 					/*frame.setVisible(false);*/
 					Reward.setEnabled(false);
@@ -491,56 +488,34 @@ public class Quiz extends JPanel{
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
+					output.setText("");
+					nextLevel.setEnabled(false);
+					Reward.setEnabled(false);
+					restart.setEnabled(false);
+					_finished = false;
+					incorrectWords.clear();
+					_level++;
+					startQuiz();
 					
-					next.setSelectedItem("Level " + _level);
-					
-					int response = JOptionPane.showConfirmDialog(null, next, "Please select the next level", JOptionPane.OK_CANCEL_OPTION);
-					
-					if (response == JOptionPane.OK_OPTION) {
-						nextLevel.setEnabled(false);
-						videoReward.setEnabled(false);
-						restart.setEnabled(false);
-						_finished = false;
-						incorrectWords.clear();
-						output.setText("");
-						startQuiz();
-					}
-
 				}
 
 			});
 			
-/*			next.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent evt) {
-					@SuppressWarnings("rawtypes")
-					JComboBox lv = (JComboBox) evt.getSource();
-					String selectedlv = (String) lv.getSelectedItem();
-					String[] level = selectedlv.split(" ");
-					_level = Integer.parseInt(level[1]);
-					
-				}
-			});*/
 		}
 
 		JPanel panel = new JPanel(new BorderLayout());
+		panel.setBackground(new Color(220,221,225));
 		JPanel options = new JPanel();
-		
-		UIDefaults defaults = UIManager.getDefaults();
-		defaults.put("TextPane.background",new ColorUIResource(new Color(248, 248, 255)));
-		defaults.put("TextPane.inactiveBackground",new ColorUIResource(new Color(248, 248, 255)));
-		defaults.put("TextPane[Enabled].backgroundPainter",new Color(248, 248, 255));
-		output.putClientProperty("Nimbus.Overrides",defaults);
-		output.putClientProperty("Nimbus.Overrides.InheritDefaults",true);
-		output.setBackground(new Color(248, 248, 255));
 
 		JScrollPane scroll = new JScrollPane(output);
 
 		input.setPreferredSize(new Dimension(250, 30));
-		input.setBackground(new Color(248, 248, 255));
 		submit.setEnabled(false);
 
 		JPanel quizOptions = new JPanel();
-
+		quizOptions.setBackground(new Color(220,221,225));
+		options.setBackground(new Color(220,221,225));
+		
 		quizOptions.add(submit);
 
 		// Plays the word once more once clicked
@@ -552,7 +527,7 @@ public class Quiz extends JPanel{
 				submit.setEnabled(false);
 				ArrayList<String> text = new ArrayList<String>();
 				text.add("repeat " + currentWord);
-				frame.speaker.textToSpeech(text);
+				frame.getSpeaker().textToSpeech(text);
 			}
 
 		});
@@ -562,7 +537,6 @@ public class Quiz extends JPanel{
 		quizOptions.add(repeat);
 		panel.add(input, BorderLayout.CENTER);
 		panel.add(quizOptions, BorderLayout.EAST);
-
 		options.add(close, JPanel.LEFT_ALIGNMENT);
 		options.add(changeVoice);
 		options.add(restart, JPanel.RIGHT_ALIGNMENT);
@@ -613,9 +587,15 @@ public class Quiz extends JPanel{
 	 */
 	private void updateLevelResult() {
 		if (_type.equals(quizType.QUIZ)) {
-
-			levelStats.setText("Level " + _level + ":  " + "Correct - " + numberCorrect + "/" + testNum + "  Incorrect - "
-					+ (testNum - numberCorrect) + "/" + testNum);
+			String feedback = "Level " + _level + ":  " + "Correct - " + numberCorrect + "/" + testNum + "  Incorrect - "
+					+ (testNum - numberCorrect) + "/" + testNum;
+			if(testNum != 0 ){
+				feedback = feedback + "  Accuracy - " + df.format(((double) numberCorrect / testNum) * 100) + "%";
+			} else {
+				feedback = feedback + "  Accuracy - " + "0.00%";
+			}
+			
+			levelStats.setText(feedback);
 		}
 	}
 	
@@ -640,7 +620,7 @@ public class Quiz extends JPanel{
 		if(msg.contains("Welcome") && (msg.contains("level") || (msg.contains("review")))){
 			set = style.addAttribute(set,StyleConstants.FontSize,18);
 		} else {
-			set = style.addAttribute(set,StyleConstants.FontSize,14);
+			set = style.addAttribute(set,StyleConstants.FontSize,16);
 		}
 		
 		int length = output.getDocument().getLength();

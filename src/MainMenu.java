@@ -16,6 +16,8 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import utility.FileContentReader;
+import utility.ImageResizer;
+
 import javax.swing.JLabel;
 import javax.swing.ImageIcon;
 import java.awt.Color;
@@ -29,10 +31,15 @@ public class MainMenu extends JPanel {
 	private JButton review = new JButton("Review Mistakes");
 	private JButton statistics = new JButton("View Statistics");
 	private JButton clear = new JButton("Clear Statistics");
-	private Gui _frame;
+	private JButton settings;
+	private JButton changeSpeed = new JButton("Change Speaker Speed");private Gui _frame;	
+	private JButton exit;
+	private JButton changeVoice = new JButton("Change Speaker Voice");
+	private JButton SelectFile = new JButton("Change Spelling List");
 	private FileContentReader reader = new FileContentReader();
+	private JButton btnHelp;
 	@SuppressWarnings("rawtypes")
-	protected JComboBox selectLV;
+	private JComboBox selectLV;
 	@SuppressWarnings("rawtypes")
 	private JComboBox reviewLV;
 	@SuppressWarnings("rawtypes")
@@ -40,16 +47,12 @@ public class MainMenu extends JPanel {
 	private int _level = 1;
 	private String _defaultFile = "NZCER-spelling-lists.txt";
 	private String _filePath = null;
-	private JButton exit = new JButton("Exit");
-	private JButton changeVoice = new JButton("Change Speaker Voice");
-	private JButton SelectFile = new JButton("Change Spelling List");
-	protected int _maxLevel = 0;
+	private int _maxLevel = 0;
 	private JSlider voiceSpeed;
-	private JButton settings = new JButton("Settings");
-	private JButton changeSpeed = new JButton("Change Speaker Speed");
-	private final JButton btnHelp = new JButton("Help");
+
 	private final JFileChooser fileSelector = new JFileChooser();
 	private int _minLevel;
+    private ImageResizer resizer = new ImageResizer();
 	
 	/*
 	 * Reused A2 code
@@ -68,7 +71,7 @@ public class MainMenu extends JPanel {
 			updateSelectLevel(frame.getFilePath());
 		}
 
-		quiz.setFont(new Font("SansSerif", Font.PLAIN, 14));
+		quiz.setFont(new Font("SansSerif", Font.PLAIN, 16));
 
 		quiz.addActionListener(new ActionListener() {
 
@@ -107,7 +110,7 @@ public class MainMenu extends JPanel {
 			}
 
 		});
-		review.setFont(new Font("SansSerif", Font.PLAIN, 14));
+		review.setFont(new Font("SansSerif", Font.PLAIN, 16));
 		review.addActionListener(new ActionListener() {
 
 			@Override
@@ -135,7 +138,7 @@ public class MainMenu extends JPanel {
 			}
 
 		});
-		statistics.setFont(new Font("SansSerif", Font.PLAIN, 14));
+		statistics.setFont(new Font("SansSerif", Font.PLAIN, 16));
 		statistics.addActionListener(new ActionListener() {
 
 			@Override
@@ -151,7 +154,7 @@ public class MainMenu extends JPanel {
 			}
 
 		});
-		clear.setFont(new Font("SansSerif", Font.PLAIN, 14));
+		clear.setFont(new Font("SansSerif", Font.PLAIN, 16));
 		clear.addActionListener(new ActionListener() {
 
 			@Override
@@ -179,19 +182,18 @@ public class MainMenu extends JPanel {
 
 		});
 		
-		selectVoices = _frame.speaker.selectVoices;
+		selectVoices = _frame.getSpeaker().getVoiceBox();
 		
 		menu.add(quiz);
 		menu.add(review);
 		menu.add(statistics);
 		menu.add(clear);
-
+		menu.setBackground(new Color(220,221,225));
 		JPanel options = new JPanel();
-		options.setBackground(new Color(214, 217, 223));
+		options.setBackground(new Color(220,221,225));
 
-		exit.setFont(new Font("SansSerif", Font.PLAIN, 14));
-
-
+		exit = new JButton("Exit",resizer.Resize(new ImageIcon(MainMenu.class.getResource("/img/exit.png")),20,20));
+		exit.setFont(new Font("SansSerif", Font.PLAIN, 16));
 		exit.addActionListener(new ActionListener() {
 
 			@Override
@@ -201,7 +203,7 @@ public class MainMenu extends JPanel {
 
 		});
 
-		voiceSpeed = _frame.speaker.voiceSpeed;
+		voiceSpeed = _frame.getSpeaker().getVoiceSlider();
 
 		final Object[] Options = {changeVoice, changeSpeed, SelectFile};
 		
@@ -234,8 +236,10 @@ public class MainMenu extends JPanel {
 
 				int response = JOptionPane.showConfirmDialog(null, selectVoices, "Please select a voice to use", JOptionPane.OK_CANCEL_OPTION);
 				if (response == JOptionPane.OK_OPTION) {
-					/*_frame.speaker.setVoice(_selectedVoice);*/
-					_frame.speaker.setVoice(_frame.speaker.getSelectVoice());
+					_frame.getSpeaker().setVoice(_frame.getSpeaker().getSelectVoice());
+					ArrayList<String> example = new ArrayList<String>();
+					example.add("Hello there");
+					_frame.getSpeaker().textToSpeech(example);
 				}
 			}
 
@@ -248,15 +252,20 @@ public class MainMenu extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				int response = JOptionPane.showConfirmDialog(null, voiceSpeed, "Please select a speed to use", JOptionPane.OK_CANCEL_OPTION);
 				if (response == JOptionPane.OK_OPTION) {
-					_frame.speaker.setSelectedSpeed("(Parameter.set 'Duration_Stretch " + _frame.speaker.getSpeed() +")");
-					/*_selectedSpeed = "(Parameter.set 'Duration_Stretch " + _speed +")";*/
+					_frame.getSpeaker().setSelectedSpeed("(Parameter.set 'Duration_Stretch " + _frame.getSpeaker().getSpeed() +")");
 				}
 			}
 
 		});
 		
-		settings.setFont(new Font("SansSerif", Font.PLAIN, 14));
-
+/*		ImageIcon settingIcon = new ImageIcon(MainMenu.class.getResource("/img/l_017.png"));
+		Image imgSettings = settingIcon.getImage();
+		Image logoSettings = imgSettings.getScaledInstance(settings.getWidth(), settings.getHeight(), Image.SCALE_SMOOTH);
+		ImageIcon SettingsLogo = new ImageIcon(logoSettings);*/
+		settings = new JButton("Settings",resizer.Resize(new ImageIcon(MainMenu.class.getResource("/img/l_017.png")),20,20));
+		
+		settings.setFont(new Font("SansSerif", Font.PLAIN, 16));
+		
 		// Adds an ActionListener to the change voice button to display a JOptionPane message allowing the user to change voice or speed
 		settings.addActionListener(new ActionListener() {
 
@@ -267,7 +276,8 @@ public class MainMenu extends JPanel {
 
 		});
 		 
-		btnHelp.setFont(new Font("SansSerif", Font.PLAIN, 14));
+		btnHelp = new JButton("Help",resizer.Resize(new ImageIcon(MainMenu.class.getResource("/img/help.png")),20,20));
+		btnHelp.setFont(new Font("SansSerif", Font.PLAIN, 16));
 		btnHelp.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JOptionPane.showMessageDialog(null, "Press \"New Quiz\" to start a new quiz\nPress \"Review\" to review previously failed words\nPress \"View Statistics\" to view your current statistics\nPress \"Clear Statistics\" to clear all current statistics\nPress \"Settings\" to change the text to speech voice or speed or the spelling list", "Help", JOptionPane.INFORMATION_MESSAGE);
@@ -331,32 +341,6 @@ public class MainMenu extends JPanel {
 		}
 
 	}
-
-
-	/**
-	 * This method sets the voice field into a string that is able to be directly entered into a festival scm file
-	 * 
-	 * Original code by David
-	 *
-	 * @param voice The voice to set
-	 */
-/*	public void setVoice(String voice){
-		if(voice != null){
-			switch (voice) {
-			case "CMU US KAL voice":
-				voice = "kal_diphone";
-				break;
-			case "CSTR UK RAB voice":
-				voice = "rab_diphone";
-				break;
-			case "Auckland NZ JDT voice":
-				voice = "akl_nz_jdt_diphone";
-				break;
-			}
-			
-			_voice = "(voice_" + voice + ")";
-		}
-	}*/
 
 	/**
 	 * This method scans all of the levels inside a wordlist and also saves the maximum level inside the

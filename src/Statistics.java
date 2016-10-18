@@ -43,7 +43,6 @@ public class Statistics extends JPanel {
 	private Gui _frame;
 	private JButton close = new JButton("Main Menu");
 	private JButton statDetail = new JButton("Graphical feedback");
-	/*private MainMenu _spelling_Aid;*/
 	private JTable table;
 	private static DecimalFormat df = new DecimalFormat("#.#");
 	private final static String[] columns = { "Level", "Passed", "Failed", "Average Score", "Total Attempts", "Highest Score" };
@@ -101,7 +100,7 @@ public class Statistics extends JPanel {
 			});
 
 			JPanel options = new JPanel();
-			options.setBackground(new Color(214, 217, 223));
+			options.setBackground(new Color(220,221,225));
 			options.setLayout(new FlowLayout(FlowLayout.LEFT));
 			options.add(close);
 			options.add(statDetail);
@@ -210,9 +209,9 @@ public class Statistics extends JPanel {
 			table = new JTable(new Model(data, columns));
 			table.getTableHeader().setReorderingAllowed(false);
 			table.getTableHeader().setResizingAllowed(false);
-			table.getColumnModel().getColumn(0).setPreferredWidth(40);
+			table.getColumnModel().getColumn(0).setPreferredWidth(25);
 			table.getColumnModel().getColumn(1).setPreferredWidth(40);
-			table.getColumnModel().getColumn(2).setPreferredWidth(40);
+			table.getColumnModel().getColumn(2).setPreferredWidth(27);
 			table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			table.setRowSelectionAllowed(true);
 			table.getColumnModel().getColumn(3).setPreferredWidth(90);

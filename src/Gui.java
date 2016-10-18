@@ -8,7 +8,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 @SuppressWarnings("serial")
 public class Gui extends JFrame{
 
-	protected Speaker speaker = new Speaker();
+	private Speaker speaker = new Speaker();
 	private String _filePath;
 
 	public Gui() {
@@ -29,6 +29,10 @@ public class Gui extends JFrame{
 		_filePath = path;
 	}
 	
+	public Speaker getSpeaker(){
+		return speaker;
+	}
+	
 	public static void main(String[] Args) {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
@@ -36,7 +40,9 @@ public class Gui extends JFrame{
 				Gui frame = new Gui();
 				frame.setResizable(false);
 				try {
-					UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+					UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+					/*"com.sun.java.swing.plaf.gtk.GTKLookAndFeel"*/
+					/*"com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel"*/
 					SwingUtilities.updateComponentTreeUI(frame);
 				} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
 						| UnsupportedLookAndFeelException e) {

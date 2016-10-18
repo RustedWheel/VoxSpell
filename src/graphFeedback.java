@@ -12,7 +12,6 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.MatteBorder;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -52,7 +51,7 @@ public class graphFeedback extends JDialog {
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		
 		JPanel sidePanel = new JPanel(new BorderLayout());
-		sidePanel.setBackground(new Color(240, 240, 240, 255));
+		sidePanel.setBackground(new Color(240, 240, 240));
 		
 		//Creates the line graph
 		DefaultCategoryDataset lineData = newLineDataset(levelScores);
@@ -65,24 +64,25 @@ public class graphFeedback extends JDialog {
 		PieDataset pieData = newPieDataset(levelStats);
 		JFreeChart pieChart = PieChart(pieData);
 		ChartPanel pieChartPanel = new ChartPanel(pieChart);
-		pieChartPanel.setPreferredSize(new java.awt.Dimension(380, 300));
+		pieChartPanel.setPreferredSize(new java.awt.Dimension(380, 290));
 		sidePanel.add(pieChartPanel,BorderLayout.NORTH);
 		
 		//Creates the bar chart
 		DefaultCategoryDataset barDataset = NewBarDataset(levelScores);
 		JFreeChart barChart = NewBarChart(barDataset);
 		ChartPanel barChartPanel = new ChartPanel(barChart);
-		barChartPanel.setPreferredSize(new java.awt.Dimension(380, 300));
+		barChartPanel.setPreferredSize(new java.awt.Dimension(380, 290));
 		sidePanel.add(barChartPanel,BorderLayout.SOUTH);
 		
 		contentPanel.add(sidePanel,BorderLayout.WEST);
-		contentPanel.setBackground(new Color(240, 240, 240, 255));
-		contentPanel.setBorder(new MatteBorder(1,1,1,1, (Color) new Color(83, 104, 120, 255)));
+		contentPanel.setBackground(new Color(240, 240, 240));
+		/*contentPanel.setBorder(new MatteBorder(1,1,1,1, (Color) new Color(83, 104, 120, 255)));*/
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		{
 			//Add a new back button
 			JPanel buttonPane = new JPanel();
-			buttonPane.setLayout(new FlowLayout());
+			buttonPane.setBackground(new Color(220,221,225));
+			buttonPane.setLayout(new FlowLayout(FlowLayout.LEFT));
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
 			{
 				JButton backButton = new JButton("Back");
