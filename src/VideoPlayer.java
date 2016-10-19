@@ -13,26 +13,67 @@ import javax.swing.JProgressBar;
 import javax.swing.Timer;
 import uk.co.caprica.vlcj.component.EmbeddedMediaPlayerComponent;
 import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer;
-import utility.ImageResizer;
 
 
 public class VideoPlayer {
 	
     private final EmbeddedMediaPlayerComponent mediaPlayerComponent;
-    private JFrame frame;
+    private JFrame Videoframe;
     private ImageIcon muteIcon, unmuteIcon, playIcon, exitIcon, pauseIcon;
     private JButton play, stop, mute;
     private JProgressBar progress = new JProgressBar();
-    private ImageResizer resizer = new ImageResizer();
-    
-/*
-    ffmpeg -i video.mp4 -i audio.wav -c:v copy -c:a aac -strict experimental output.mp4*/
 
     public VideoPlayer(String filename) {
     
-        frame = new JFrame("Level up Reward");
+    	Videoframe = new JFrame("Level up Reward");
+/*        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);*/
+		/*frame.addWindowListener(new WindowListener() {
 
+	        @Override
+	        public void windowClosing(WindowEvent e) {
+	        	frame.dispose();
+	        }
+
+			@Override
+			public void windowOpened(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void windowClosed(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void windowIconified(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void windowDeiconified(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void windowActivated(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void windowDeactivated(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+		});*/
+        
         mediaPlayerComponent = new EmbeddedMediaPlayerComponent();
+        mediaPlayerComponent.setSize(600, 600);
         final EmbeddedMediaPlayer video = mediaPlayerComponent.getMediaPlayer();
         setUpGUI();
         
@@ -57,7 +98,7 @@ public class VideoPlayer {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				video.stop();
-				frame.dispose();
+				Videoframe.dispose();
 			}
         	
         });
@@ -88,25 +129,25 @@ public class VideoPlayer {
 			}
 		});
         
-        frame.setLocation(100, 100);
-        frame.setSize(1050, 600);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setVisible(true);
+        Videoframe.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        Videoframe.setLocation(100, 100);
+        Videoframe.setSize(1050, 600);
+        Videoframe.setVisible(true);
 
         // play the video specified in the input
         video.playMedia(filename);
         timer.start();
     }
-    
-    private void setUpGUI(){
+
+	private void setUpGUI(){
         
-        frame.add(mediaPlayerComponent);
+		Videoframe.add(mediaPlayerComponent);
         
-        muteIcon = resizer.Resize(new ImageIcon(VideoPlayer.class.getResource("/img/Mute.png")), 30, 25);
-        unmuteIcon = resizer.Resize(new ImageIcon(VideoPlayer.class.getResource("/img/Unmute.png")), 30, 25);
-        playIcon = resizer.Resize(new ImageIcon(VideoPlayer.class.getResource("/img/Play.png")), 30, 25);
-        exitIcon = resizer.Resize(new ImageIcon(VideoPlayer.class.getResource("/img/Stop.png")), 30, 25);
-        pauseIcon = resizer.Resize(new ImageIcon(VideoPlayer.class.getResource("/img/Pause.png")), 30, 25);
+        muteIcon = new ImageIcon(VideoPlayer.class.getResource("/img/Mute.png"));
+        unmuteIcon = new ImageIcon(VideoPlayer.class.getResource("/img/Unmute.png"));
+        playIcon = new ImageIcon(VideoPlayer.class.getResource("/img/Play.png"));
+        exitIcon = new ImageIcon(VideoPlayer.class.getResource("/img/Stop.png"));
+        pauseIcon = new ImageIcon(VideoPlayer.class.getResource("/img/Pause.png"));
         
         mute = new JButton(muteIcon);
 		mute.setPreferredSize(new Dimension(60,50));
@@ -128,6 +169,6 @@ public class VideoPlayer {
         menu.add(progress);
         menu.add(playerPanel);
         
-        frame.add(menu, BorderLayout.SOUTH);
+        Videoframe.add(menu, BorderLayout.SOUTH);
     }
 }

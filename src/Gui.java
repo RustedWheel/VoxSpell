@@ -1,6 +1,9 @@
 import java.awt.Color;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -16,9 +19,56 @@ public class Gui extends JFrame{
 		setSize(500, 525);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setBackground(new Color(248, 248, 255));
+		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+		addWindowListener(new WindowListener() {
+
+	        @Override
+	        public void windowClosing(WindowEvent e) {
+	        	int response = JOptionPane.showConfirmDialog(null, "Are you sure you want to quit?", "Confirm exit", JOptionPane.CANCEL_OPTION);
+				if (response == JOptionPane.OK_OPTION) {
+					 System.exit(0);
+				}
+	        }
+
+			@Override
+			public void windowOpened(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void windowClosed(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void windowIconified(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void windowDeiconified(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void windowActivated(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void windowDeactivated(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+	    });
 		setLocationRelativeTo(null);
 		add(new MainMenu(this));
-			
 	}
 	
 	public String getFilePath(){

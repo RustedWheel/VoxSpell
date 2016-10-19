@@ -9,6 +9,8 @@ import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Random;
+
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -43,7 +45,7 @@ public class Quiz extends JPanel{
 	private JButton restart = new JButton("Restart");
 	protected JButton submit = new JButton("Submit");
 	private JButton close = new JButton("Main Menu");
-	private JButton changeVoice = new JButton("Change Voice");
+	private JButton changeVoice = new JButton("Change Voice",new ImageIcon(Quiz.class.getResource("/img/voice.png")));
 	private JButton nextLevel = new JButton("Next level");
 	private JButton videoReward = new JButton("Video Reward");
 	private JButton Reward = new JButton("Rewards");
@@ -460,7 +462,6 @@ public class Quiz extends JPanel{
 					@SuppressWarnings("unused")
 					VideoPlayer video = new VideoPlayer("audioReward.avi");
 					
-					/*frame.setVisible(false);*/
 					Reward.setEnabled(false);
 					dialog.setVisible(false);
 				}
@@ -554,7 +555,7 @@ public class Quiz extends JPanel{
 		}
 
 		nextLevel.setEnabled(false);
-		Reward.setEnabled(false);
+		/*Reward.setEnabled(false);*/
 		restart.setEnabled(false);
 
 		add(panel, BorderLayout.NORTH);

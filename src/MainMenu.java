@@ -16,7 +16,6 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import utility.FileContentReader;
-import utility.ImageResizer;
 
 import javax.swing.JLabel;
 import javax.swing.ImageIcon;
@@ -52,7 +51,6 @@ public class MainMenu extends JPanel {
 
 	private final JFileChooser fileSelector = new JFileChooser();
 	private int _minLevel;
-    private ImageResizer resizer = new ImageResizer();
 	
 	/*
 	 * Reused A2 code
@@ -192,7 +190,7 @@ public class MainMenu extends JPanel {
 		JPanel options = new JPanel();
 		options.setBackground(new Color(220,221,225));
 
-		exit = new JButton("Exit",resizer.Resize(new ImageIcon(MainMenu.class.getResource("/img/exit.png")),20,20));
+		exit = new JButton("Exit",new ImageIcon(MainMenu.class.getResource("/img/exit.png")));
 		exit.setFont(new Font("SansSerif", Font.PLAIN, 16));
 		exit.addActionListener(new ActionListener() {
 
@@ -258,11 +256,7 @@ public class MainMenu extends JPanel {
 
 		});
 		
-/*		ImageIcon settingIcon = new ImageIcon(MainMenu.class.getResource("/img/l_017.png"));
-		Image imgSettings = settingIcon.getImage();
-		Image logoSettings = imgSettings.getScaledInstance(settings.getWidth(), settings.getHeight(), Image.SCALE_SMOOTH);
-		ImageIcon SettingsLogo = new ImageIcon(logoSettings);*/
-		settings = new JButton("Settings",resizer.Resize(new ImageIcon(MainMenu.class.getResource("/img/l_017.png")),20,20));
+		settings = new JButton("Settings",new ImageIcon(MainMenu.class.getResource("/img/setting.png")));
 		
 		settings.setFont(new Font("SansSerif", Font.PLAIN, 16));
 		
@@ -276,7 +270,7 @@ public class MainMenu extends JPanel {
 
 		});
 		 
-		btnHelp = new JButton("Help",resizer.Resize(new ImageIcon(MainMenu.class.getResource("/img/help.png")),20,20));
+		btnHelp = new JButton("Help",new ImageIcon(MainMenu.class.getResource("/img/help.png")));
 		btnHelp.setFont(new Font("SansSerif", Font.PLAIN, 16));
 		btnHelp.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
