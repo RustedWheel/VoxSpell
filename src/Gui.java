@@ -1,12 +1,20 @@
 import java.awt.Color;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+/*import java.io.File;
+import java.io.FileInputStream;*/
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+
+/*import sun.audio.AudioData;
+import sun.audio.AudioPlayer;
+import sun.audio.AudioStream;
+import sun.audio.ContinuousAudioDataStream;*/
+import utility.DeleteGeneratedReward;
 
 @SuppressWarnings("serial")
 public class Gui extends JFrame{
@@ -16,7 +24,8 @@ public class Gui extends JFrame{
 
 	public Gui() {
 		super("VoxSpell");
-		setSize(500, 525);
+		setSize(550, 575);
+/*		startBGMusic();*/
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setBackground(new Color(248, 248, 255));
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -26,7 +35,8 @@ public class Gui extends JFrame{
 	        public void windowClosing(WindowEvent e) {
 	        	int response = JOptionPane.showConfirmDialog(null, "Are you sure you want to quit?", "Confirm exit", JOptionPane.CANCEL_OPTION);
 				if (response == JOptionPane.OK_OPTION) {
-					 System.exit(0);
+					DeleteGeneratedReward.delete();
+					System.exit(0);
 				}
 	        }
 
@@ -82,6 +92,20 @@ public class Gui extends JFrame{
 	public Speaker getSpeaker(){
 		return speaker;
 	}
+	
+/*	public void startBGMusic(){
+	    AudioPlayer myBackgroundPlayer = AudioPlayer.player;
+	    ContinuousAudioDataStream myLoop = null;
+	    try {
+	    	AudioStream myBackgroundMusic = new AudioStream(getClass().getResourceAsStream("bgm.mp3"));
+	          AudioData myData = myBackgroundMusic.getData();
+	          myLoop = new ContinuousAudioDataStream(myData);
+	    }catch(Exception error){
+	        System.out.println("File Not Found");
+	        System.out.println(error);
+	    }
+	    myBackgroundPlayer.start(myLoop);  
+	}*/
 	
 	public static void main(String[] Args) {
 		SwingUtilities.invokeLater(new Runnable() {

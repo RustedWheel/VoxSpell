@@ -1,3 +1,5 @@
+package game;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,18 +13,20 @@ public class NumberGame extends JFrame {
     private JButton replay, Quit;
     private JButton[] numberButtons = new JButton[16];
     private int counter = 0;
-    private int correctCounter = 0;
     private int[] buttonID = new int[2];
     private int[] number = new int[2];
     private ArrayList<Integer> list = new ArrayList<Integer>();
     private JPanel NumberGameBoard = new JPanel();
 
     public NumberGame() {
+    }
+    
+    public void start() {
     	setUpActionListners();
     	setUpGamePanel();
         setButtonPairs();
         setTitle("Number Game");
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(500, 500);
         setResizable(false);
         setVisible(true);
@@ -36,31 +40,31 @@ public class NumberGame extends JFrame {
         Panel buttonPanel = new Panel();
         buttonPanel.add(replay);
         buttonPanel.add(Quit);
-        buttonPanel.setLayout(new GridLayout(1, 0));
+        buttonPanel.setLayout(new FlowLayout());
         add(NumberGameBoard, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
         
     }
     
     public void setUpActionListners() {
-        Quit = new JButton("Quit");
+        Quit = new JButton("Quit",new ImageIcon(NumberGame.class.getResource("/img/exit.png")));
         Quit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.exit(0);
+				dispose();
 			}
 		});
         
-        replay = new JButton("Replay");
+        replay = new JButton("Replay",new ImageIcon(NumberGame.class.getResource("/img/restart.png")));
         replay.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				 dispose();
-		         new NumberGame();
+		         new NumberGame().start();
 			}
 		});
         
 		for (int i = 0; i < numberButtons.length; i++) {
 			numberButtons[i] = new JButton();
-			int buttonNumber = i;
+			final int buttonNumber = i;
 			numberButtons[i].setFont(new Font("SansSerif", Font.BOLD, 28));
 			numberButtons[i].addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -73,7 +77,6 @@ public class NumberGame extends JFrame {
 						if (CompareValue()) {
 							numberButtons[buttonID[0]].setEnabled(false);
 							numberButtons[buttonID[1]].setEnabled(false);
-							System.out.println(correctCounter);
 						} else {
 							numberButtons[buttonID[0]].setEnabled(true);
 							numberButtons[buttonID[0]].setText("");
@@ -107,16 +110,8 @@ public class NumberGame extends JFrame {
  
     public boolean CompareValue() {
         if (number[0] == number[1]) {
-        	correctCounter++;
-/*        	if(correctCounter == (numberButtons.length/2)){
-				JOptionPane.showMessageDialog(null, "Congratulations! you have finished the game.\nClick Replay to start a new Game.\nClick Quit to return to the spelling quiz.");	
-			}*/
             return true;
         }
         return false;
-    }
- 
-    public static void main(String[] args) {
-        new NumberGame();
     }
 }

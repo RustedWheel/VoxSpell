@@ -94,6 +94,39 @@ public class FileContentReader {
 
 	}
 	
+	public ArrayList<String> readFailed(int level) {
+
+		ArrayList<String> failedWords = new ArrayList<String>();
+
+		try {
+
+			FileReader fr = new FileReader(".failed");
+			BufferedReader br = new BufferedReader(fr);
+
+			String line;
+
+			// Add the words to the ArrayList once the level is found, up to when the header for the next level is found
+			// Or when the list ends
+			while ((line = br.readLine()) != null) {
+				String[] word = line.split("	");
+
+				if(Integer.parseInt(word[1]) == level){
+					failedWords.add(word[0]);
+				}
+				line = br.readLine();
+			}
+
+			br.close();
+			fr.close();
+
+		} catch (IOException e1) {
+
+		}
+
+		return failedWords;
+
+	}
+	
 	/**
 	 * This method returns a String array containing the names of every directory inside a directory
 	 * 

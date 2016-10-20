@@ -1,9 +1,12 @@
+package utility;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -26,12 +29,12 @@ public class VideoPlayer {
     public VideoPlayer(String filename) {
     
     	Videoframe = new JFrame("Level up Reward");
-/*        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);*/
-		/*frame.addWindowListener(new WindowListener() {
+    	Videoframe.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+    	Videoframe.addWindowListener(new WindowListener() {
 
 	        @Override
 	        public void windowClosing(WindowEvent e) {
-	        	frame.dispose();
+	        	stop.doClick();
 	        }
 
 			@Override
@@ -70,7 +73,7 @@ public class VideoPlayer {
 				
 			}
 
-		});*/
+		});
         
         mediaPlayerComponent = new EmbeddedMediaPlayerComponent();
         mediaPlayerComponent.setSize(600, 600);
@@ -129,7 +132,6 @@ public class VideoPlayer {
 			}
 		});
         
-        Videoframe.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         Videoframe.setLocation(100, 100);
         Videoframe.setSize(1050, 600);
         Videoframe.setVisible(true);

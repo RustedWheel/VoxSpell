@@ -13,8 +13,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -41,18 +43,21 @@ import utility.FileContentReader;
 public class Statistics extends JPanel {
 	
 	private Gui _frame;
-	private JButton close = new JButton("Main Menu");
-	private JButton statDetail = new JButton("Graphical feedback");
+	private JButton close, statDetail;
 	private JTable table;
+	private double highest = 0;
 	private static DecimalFormat df = new DecimalFormat("#.#");
 	private final static String[] columns = { "Level", "Passed", "Failed", "Average Score", "Total Attempts", "Highest Score" };
 	private HashMap<Integer, Integer[]> stats = new HashMap<Integer, Integer[]>();
 	private HashMap<Integer, ArrayList<Integer>> scores = new HashMap<Integer, ArrayList<Integer>>();
 	private ChartPanel chartPanel = null;
+	private FileContentReader reader = new FileContentReader();
 
 	public Statistics(Gui frame) {
 		_frame = frame;
 		setLayout(new BorderLayout());
+		close = new JButton("Main Menu",new ImageIcon(Statistics.class.getResource("/img/home.png")));
+		statDetail = new JButton("Graphical feedback",new ImageIcon(Statistics.class.getResource("/img/graph.png")));
 		statDetail.setEnabled(false);
 		statDetail.addActionListener(new ActionListener() {
 
@@ -64,8 +69,8 @@ public class Statistics extends JPanel {
 
 				Integer[] levelStats = stats.get(level);
 				ArrayList<Integer> levelScores = scores.get(level);
-
-				graphFeedback feedback = new graphFeedback(levelStats, levelScores);
+				ArrayList<String> failedWords =  reader.readFailed(level);
+				graphFeedback feedback = new graphFeedback(levelStats, levelScores,failedWords);
 				feedback.setVisible(true);
 
 			}
@@ -90,8 +95,9 @@ public class Statistics extends JPanel {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					_frame.getContentPane().removeAll();
+					_frame.setTitle("VoXSpell");
 					MainMenu menu = new MainMenu(_frame);
-					_frame.setSize(500, 525);
+					_frame.setSize(550, 575);
 					_frame.getContentPane().add(menu);
 					_frame.revalidate();
 					_frame.repaint();
@@ -102,8 +108,11 @@ public class Statistics extends JPanel {
 			JPanel options = new JPanel();
 			options.setBackground(new Color(220,221,225));
 			options.setLayout(new FlowLayout(FlowLayout.LEFT));
+			JLabel highestScore = new JLabel();
+			highestScore.setText("	Personal highest score: " + df.format(highest));
 			options.add(close);
 			options.add(statDetail);
+			options.add(highestScore);
 
 			// Adds the JTable to a JScrollPane to allow for scrolling and for
 			// headers to show up
@@ -132,7 +141,6 @@ public class Statistics extends JPanel {
 		// Displays an error message if there are no statistics to be shown
 		if (results.size() == 0) {
 			JOptionPane.showMessageDialog(new JFrame(), "Error, no results saved", "Error", JOptionPane.ERROR_MESSAGE);
-			/*_spelling_Aid.setVisible(true);*/
 		} else {
 			// array representing passed, failed and total score and highest score
 			ArrayList<Integer> levels = new ArrayList<Integer>();
@@ -160,6 +168,10 @@ public class Statistics extends JPanel {
 
 				int score = Integer.parseInt(split[1]);
 
+				if(score > highest){
+					highest = score;
+				}
+				
 				scores.get(levelKey).add(score);
 
 				if (score >= 9) {

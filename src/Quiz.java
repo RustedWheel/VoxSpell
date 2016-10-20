@@ -28,8 +28,11 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 
+import game.NumberGame;
 import utility.Appendere;
 import utility.FileContentReader;
+import utility.VideoPlayer;
+import utility.VideoWorker;
 
 @SuppressWarnings("serial")
 public class Quiz extends JPanel{
@@ -42,13 +45,8 @@ public class Quiz extends JPanel{
 	private Gui frame;
 	private Appendere appendere  = new Appendere();
 	private JTextField input = new JTextField();
-	private JButton restart = new JButton("Restart");
-	protected JButton submit = new JButton("Submit");
-	private JButton close = new JButton("Main Menu");
-	private JButton changeVoice = new JButton("Change Voice",new ImageIcon(Quiz.class.getResource("/img/voice.png")));
-	private JButton nextLevel = new JButton("Next level");
-	private JButton videoReward = new JButton("Video Reward");
-	private JButton Reward = new JButton("Rewards");
+	private JButton restart, close, changeVoice, nextLevel, videoReward, Reward, Audio, game;
+	protected JButton submit,repeat;
 	private JTextPane output = new JTextPane();;
 	private String currentWord = "";
 	protected int attempts;
@@ -59,9 +57,7 @@ public class Quiz extends JPanel{
 	private int testNum;
 	private int numberCorrect;
 	private ArrayList<String> previousCorrect = new ArrayList<String>();
-	protected JButton repeat = new JButton("Repeat");
 	private String _file;
-	private JButton Audio = new JButton("Audio Reward");
 	private int _level;
 	private JLabel levelStats = new JLabel();
 	protected boolean correct;
@@ -200,7 +196,7 @@ public class Quiz extends JPanel{
 			previousCorrect.add(currentWord);
 			frame.getSpeaker().textToSpeech(previousCorrect);
 			previousCorrect.clear();
-
+            System.out.println(currentWord);
 		} else {
 			// Once the quiz is done, then the restart button is enabled
 			frame.getSpeaker().textToSpeech(previousCorrect);
@@ -280,6 +276,18 @@ public class Quiz extends JPanel{
 		output.setBorder(border);
 		output.setMargin(new Insets(5,5,5,5));
 
+		restart = new JButton("Restart",new ImageIcon(Quiz.class.getResource("/img/restart.png")));
+		close = new JButton("Main Menu",new ImageIcon(Quiz.class.getResource("/img/home.png")));
+		changeVoice = new JButton("Change Voice",new ImageIcon(Quiz.class.getResource("/img/voice.png")));
+		nextLevel = new JButton("Next level",new ImageIcon(Quiz.class.getResource("/img/next.png")));
+		videoReward = new JButton("Video Reward",new ImageIcon(Quiz.class.getResource("/img/video.png")));
+		Reward = new JButton("Rewards",new ImageIcon(Quiz.class.getResource("/img/reward.png")));
+		Audio = new JButton("Audio Reward",new ImageIcon(Quiz.class.getResource("/img/music.png")));
+		submit = new JButton("Submit",new ImageIcon(Quiz.class.getResource("/img/enter.png")));
+		repeat = new JButton("Repeat",new ImageIcon(Quiz.class.getResource("/img/repeat.png")));
+		game = new JButton("Game",new ImageIcon(Quiz.class.getResource("/img/game.png")));
+		
+		
 		// The quiz JFrame is disposed and the main menu is unhidden once the
 		// user
 		// chooses to go back
@@ -291,6 +299,7 @@ public class Quiz extends JPanel{
 						"Exit quiz", JOptionPane.YES_NO_OPTION);
 				if (choice == JOptionPane.YES_OPTION) {
 					frame.getContentPane().removeAll();
+					frame.setTitle("VoxSpell");
 					MainMenu menu = new MainMenu(frame);
 					frame.getContentPane().add(menu);
 					frame.revalidate();
@@ -443,11 +452,9 @@ public class Quiz extends JPanel{
 						@SuppressWarnings("unused")
 						VideoPlayer video = new VideoPlayer("big_buck_bunny_1_minute.avi");
 					} else {
-						// The bonus video is played if the level is the final level
-						@SuppressWarnings("unused")
-						VideoPlayer video = new VideoPlayer("bonus_reward.avi");
+						VideoWorker worker = new VideoWorker("Bonus");
+						worker.execute();
 					}
-					/*frame.setVisible(false);*/
 					Reward.setEnabled(false);
 					dialog.setVisible(false);
 				}
@@ -459,9 +466,20 @@ public class Quiz extends JPanel{
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					
-					@SuppressWarnings("unused")
-					VideoPlayer video = new VideoPlayer("audioReward.avi");
-					
+					VideoWorker worker = new VideoWorker("Audio");
+					worker.execute();
+					Reward.setEnabled(false);
+					dialog.setVisible(false);
+				}
+
+			});
+			
+			game.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					NumberGame newGame = new NumberGame();
+					newGame.start();
 					Reward.setEnabled(false);
 					dialog.setVisible(false);
 				}
@@ -469,7 +487,7 @@ public class Quiz extends JPanel{
 			});
 			
 			
-			final Object[] RewardOptions = {videoReward, Audio};
+			final Object[] RewardOptions = {videoReward, Audio, game};
 			JOptionPane messagePane = new JOptionPane(
 				    RewardOptions,
 		            JOptionPane.INFORMATION_MESSAGE);
@@ -551,11 +569,10 @@ public class Quiz extends JPanel{
 			panel.add(levelStats, BorderLayout.NORTH);
 			options.add(nextLevel);
 			options.add(Reward);
-			/*options.add(videoReward);*/
 		}
 
 		nextLevel.setEnabled(false);
-		/*Reward.setEnabled(false);*/
+		Reward.setEnabled(false);
 		restart.setEnabled(false);
 
 		add(panel, BorderLayout.NORTH);

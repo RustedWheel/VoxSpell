@@ -2,15 +2,19 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.Paint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.border.EmptyBorder;
 
 import org.jfree.chart.ChartFactory;
@@ -42,41 +46,42 @@ public class graphFeedback extends JDialog {
 	/**
 	 * Create the dialog.
 	 */
-	public graphFeedback(Integer[] levelStats, ArrayList<Integer> levelScores) {
+	public graphFeedback(Integer[] levelStats, ArrayList<Integer> levelScores, ArrayList<String> failedWords) {
 		setTitle("Graphical feedback");
 		setBounds(100, 100, 900, 660);
 		setResizable(false);
 		getContentPane().setLayout(new BorderLayout());
-		contentPanel.setLayout(new BorderLayout());
+		contentPanel.setLayout(new GridLayout(2, 2));
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
-		
-		JPanel sidePanel = new JPanel(new BorderLayout());
-		sidePanel.setBackground(new Color(240, 240, 240));
-		
-		//Creates the line graph
-		DefaultCategoryDataset lineData = newLineDataset(levelScores);
-		JFreeChart scoreAttemptChart = LineChart(lineData);
-		ChartPanel chartPanel = new ChartPanel(scoreAttemptChart);
-		chartPanel.setPreferredSize(new java.awt.Dimension(500, 300));
-		contentPanel.add(chartPanel,BorderLayout.EAST);
+		contentPanel.setBackground(new Color(240, 240, 240));
 		
 		//Creates the pie chart
 		PieDataset pieData = newPieDataset(levelStats);
 		JFreeChart pieChart = PieChart(pieData);
 		ChartPanel pieChartPanel = new ChartPanel(pieChart);
 		pieChartPanel.setPreferredSize(new java.awt.Dimension(380, 290));
-		sidePanel.add(pieChartPanel,BorderLayout.NORTH);
+		contentPanel.add(pieChartPanel,BorderLayout.NORTH);
 		
 		//Creates the bar chart
 		DefaultCategoryDataset barDataset = NewBarDataset(levelScores);
 		JFreeChart barChart = NewBarChart(barDataset);
 		ChartPanel barChartPanel = new ChartPanel(barChart);
 		barChartPanel.setPreferredSize(new java.awt.Dimension(380, 290));
-		sidePanel.add(barChartPanel,BorderLayout.SOUTH);
+		contentPanel.add(barChartPanel,BorderLayout.SOUTH);
 		
-		contentPanel.add(sidePanel,BorderLayout.WEST);
-		contentPanel.setBackground(new Color(240, 240, 240));
-		/*contentPanel.setBorder(new MatteBorder(1,1,1,1, (Color) new Color(83, 104, 120, 255)));*/
+		String[] columns = { "Failed Words"};
+		JTable failedTable = new JTable(failedDateset(failedWords),columns);
+		failedTable.setPreferredSize(new java.awt.Dimension(380, 290));
+		failedTable.setEnabled(false);
+		contentPanel.add(new JScrollPane(failedTable));
+		
+		//Creates the line graph
+		DefaultCategoryDataset lineData = newLineDataset(levelScores);
+		JFreeChart scoreAttemptChart = LineChart(lineData);
+		ChartPanel chartPanel = new ChartPanel(scoreAttemptChart);
+		chartPanel.setPreferredSize(new java.awt.Dimension(380, 290));
+		contentPanel.add(chartPanel,BorderLayout.EAST);
+		
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		{
 			//Add a new back button
@@ -85,7 +90,7 @@ public class graphFeedback extends JDialog {
 			buttonPane.setLayout(new FlowLayout(FlowLayout.LEFT));
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
 			{
-				JButton backButton = new JButton("Back");
+				JButton backButton = new JButton("Back",new ImageIcon(Statistics.class.getResource("/img/back.png")));
 				backButton.setActionCommand("Back");
 				buttonPane.add(backButton);
 				getRootPane().setDefaultButton(backButton);
@@ -127,10 +132,10 @@ public class graphFeedback extends JDialog {
 				false);
 		lineChart.getTitle().setFont(new Font("SansSerif", Font.ITALIC, 20));
 		lineChart.getTitle().setPaint(new Color(51, 47, 47));
-		lineChart.setBackgroundPaint(new Color(240, 240, 240, 255));
+		lineChart.setBackgroundPaint(new Color(240, 240, 240));
 		CategoryPlot plot = lineChart.getCategoryPlot();
 		LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
-		plot.setBackgroundPaint(new Color(248, 248, 255, 255));
+		plot.setBackgroundPaint(new Color(255, 255, 255));
 		plot.setRangeGridlinePaint(new Color(112, 128, 144, 255));
 		renderer.setBaseShapesVisible(true);
 		NumberAxis yAxis = (NumberAxis) plot.getRangeAxis();
@@ -153,7 +158,7 @@ public class graphFeedback extends JDialog {
 	private JFreeChart PieChart(PieDataset dataset){
 		//Creates the pie chart and sets its axis and colours
 		JFreeChart pieChart = ChartFactory.createPieChart(
-				"Percentage of times passed Vs percentage of times \n fail the level", 
+				"Percentage of times passed Vs percentage of times fail the level", 
 				dataset,
 				true,
 				true,
@@ -162,7 +167,7 @@ public class graphFeedback extends JDialog {
 		pieChart.getTitle().setPaint(new Color(51, 47, 47));
 		pieChart.setBackgroundPaint(new Color(240, 240, 240, 255));
 		PiePlot plot = (PiePlot) pieChart.getPlot();
-		plot.setBackgroundPaint(new Color(248, 248, 255, 255));
+		plot.setBackgroundPaint(new Color(255, 255, 255));
 		plot.setSectionPaint("Mastered",new Color(83, 104, 120, 255));
 		plot.setSectionPaint("Failed",new Color(255, 84, 83, 255));
 		plot.setLabelGenerator(new StandardPieSectionLabelGenerator(
@@ -202,7 +207,7 @@ public class graphFeedback extends JDialog {
 		BarRenderer bar = (BarRenderer) plot.getRenderer();
 		Paint mastered = new Color(83, 104, 120, 255);
 		Paint failed = new Color(255, 84, 83, 255);
-		Paint background = new Color(248, 248, 255, 255);
+		Paint background = new Color(255, 255, 255);
 		Paint grid = new Color(112, 128, 144, 255);
 		bar.setSeriesPaint(0, mastered);
 		bar.setSeriesPaint(1, failed);
@@ -216,4 +221,16 @@ public class graphFeedback extends JDialog {
 		return chart;
 	}
 
+	private Object[][] failedDateset(ArrayList<String> words){
+		
+		Object[][] data = new Object[words.size()][1];
+		
+		int row = 0;
+		for (String word : words) {
+			data[row][0] = word;
+			row++;
+		}
+		
+		return data;
+	}
 }

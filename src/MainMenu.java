@@ -15,6 +15,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
+import utility.DeleteGeneratedReward;
 import utility.FileContentReader;
 
 import javax.swing.JLabel;
@@ -61,7 +63,8 @@ public class MainMenu extends JPanel {
 		JPanel menu = new JPanel();
 		menu.setLayout(layout);
 		JPanel welcomeScreen = new JPanel();
-		welcomeScreen.setBackground(new Color(248, 248, 255));
+		/*welcomeScreen.setBackground(new Color(248, 248, 255));*/
+		welcomeScreen.setBackground(new Color(255, 255, 255));
 		
 		if(frame.getFilePath()==null){
 			updateSelectLevel(_defaultFile);
@@ -97,6 +100,7 @@ public class MainMenu extends JPanel {
 						// Starts a new quiz and hides the main menu
 						Quiz _quiz = new Quiz(Quiz.quizType.QUIZ, _frame, _level, _maxLevel, file);
 						_quiz.startQuiz();
+						_frame.setTitle("New Spelling Quiz");
 						_frame.getContentPane().removeAll();
 						_frame.getContentPane().add(_quiz);
 						_frame.revalidate();
@@ -126,6 +130,7 @@ public class MainMenu extends JPanel {
 						
 						Quiz _quiz = new Quiz(Quiz.quizType.REVIEW, _frame, _level, _maxLevel, null);
 						_quiz.startQuiz();
+						_frame.setTitle("Review Mistakes");
 						_frame.getContentPane().removeAll();
 						_frame.getContentPane().add(_quiz);
 						_frame.revalidate();
@@ -144,6 +149,7 @@ public class MainMenu extends JPanel {
 				// Shows the statistics and hides the main menu
 				Statistics _statistics = new Statistics(_frame);
 				_statistics.showStats();
+				_frame.setTitle("View Statistics");
 				_frame.getContentPane().removeAll();
 				_frame.setSize(900, 400);
 				_frame.getContentPane().add(_statistics);
@@ -196,6 +202,7 @@ public class MainMenu extends JPanel {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				DeleteGeneratedReward.delete();
 				System.exit(0);
 			}
 
@@ -281,7 +288,7 @@ public class MainMenu extends JPanel {
 		
 		//Creates the VoxSpekk logo
 		JLabel logoLabel = new JLabel();
-		logoLabel.setBounds(0, 21, 488, 256);
+		logoLabel.setBounds(0, 21, 520, 300);
 		welcomeScreen.add(logoLabel, BorderLayout.CENTER);
 		ImageIcon oldLogo = new ImageIcon(MainMenu.class.getResource("/img/VoxSpell.png"));
 		Image img = oldLogo.getImage();
