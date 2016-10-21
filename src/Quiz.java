@@ -28,7 +28,7 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 
-import game.NumberGame;
+import game.WordGame;
 import utility.Appendere;
 import utility.FileContentReader;
 import utility.VideoPlayer;
@@ -49,22 +49,18 @@ public class Quiz extends JPanel{
 	protected JButton submit,repeat;
 	private JTextPane output = new JTextPane();;
 	private String currentWord = "";
-	protected int attempts;
 	private ArrayList<String> words = new ArrayList<String>();
 	private ArrayList<String> previousWords;
 	private ArrayList<String> incorrectWords = new ArrayList<String>();
-	private int size;
-	private int testNum;
-	private int numberCorrect;
+	private int size, _level, testNum, numberCorrect, _maxLevel;
+	protected int attempts;
 	private ArrayList<String> previousCorrect = new ArrayList<String>();
 	private String _file;
-	private int _level;
 	private JLabel levelStats = new JLabel();
 	protected boolean correct;
 	private JDialog dialog;
-	FileContentReader reader = new FileContentReader();
-	private int _maxLevel;	
-	private boolean _finished = false;
+	FileContentReader reader = new FileContentReader();	
+	private boolean _finished, _emptyLevel = false;
 	@SuppressWarnings("rawtypes")
 	protected JComboBox selectVoices;
 	private static DecimalFormat df = new DecimalFormat("#.##");
@@ -119,16 +115,15 @@ public class Quiz extends JPanel{
 		if (words.isEmpty()) {
 			switch (_type) {
 			case QUIZ:
-				JOptionPane.showMessageDialog(new JFrame(), "Error, no words in level " + _level, "Error",
+				JOptionPane.showMessageDialog(new JFrame(), "Error, no words found in level " + _level, "Error",
 						JOptionPane.ERROR_MESSAGE);
-				
+				_emptyLevel = true;
 				break;
 
 			case REVIEW:
 				JOptionPane.showMessageDialog(new JFrame(), "Error, no failed words saved for level " + _level, "Error",
 						JOptionPane.ERROR_MESSAGE);
-				
-				/*frame.dispose();*/
+				_emptyLevel = true;
 				break;
 			}
 		} else {
@@ -138,8 +133,6 @@ public class Quiz extends JPanel{
 				// Prints the level of the quiz
 				appendToOutput("Welcome to level " + _level + " of the quiz!\n\n",new Color(52, 80, 101),true);
 			}
-
-			/*frame.setVisible(true);*/
 
 			// Determines the number of words to be quizzed, which is either
 			// 10 or the number of words in the list, if the list has less than 10
@@ -276,6 +269,57 @@ public class Quiz extends JPanel{
 		output.setBorder(border);
 		output.setMargin(new Insets(5,5,5,5));
 
+		setUpButtons();
+
+		JPanel panel = new JPanel(new BorderLayout());
+		panel.setBackground(new Color(220,221,225));
+		JPanel options = new JPanel();
+
+		JScrollPane scroll = new JScrollPane(output);
+
+		input.setPreferredSize(new Dimension(250, 30));
+		submit.setEnabled(false);
+
+		JPanel quizOptions = new JPanel();
+		quizOptions.setBackground(new Color(220,221,225));
+		options.setBackground(new Color(220,221,225));
+		options.add(close, JPanel.LEFT_ALIGNMENT);
+		options.add(changeVoice);
+		options.add(restart, JPanel.RIGHT_ALIGNMENT);
+		if (_type == quizType.QUIZ) {
+			panel.add(levelStats, BorderLayout.NORTH);
+			options.add(nextLevel);
+			options.add(Reward);
+		}
+		
+		quizOptions.add(submit);
+		quizOptions.add(repeat);
+		
+		panel.add(input, BorderLayout.CENTER);
+		panel.add(quizOptions, BorderLayout.EAST);
+
+		
+		// If the quiz type is quiz, then the user's stats for the level are shown
+		// Original code by David
+		// If the quiz type is quiz, then the options for the quiz include a next level button and
+		// video reward button
+		// by Hunter
+
+		repeat.setEnabled(false);
+		nextLevel.setEnabled(false);
+/*		Reward.setEnabled(false);*/
+		restart.setEnabled(false);
+		add(panel, BorderLayout.NORTH);
+		add(scroll, BorderLayout.CENTER);
+		add(options, BorderLayout.SOUTH);
+
+		// Sets the submit button as the default one so that the enter button can be used to submit
+		frame.getRootPane().setDefaultButton(submit);
+
+	}
+	
+	private void setUpButtons(){
+		
 		restart = new JButton("Restart",new ImageIcon(Quiz.class.getResource("/img/restart.png")));
 		close = new JButton("Main Menu",new ImageIcon(Quiz.class.getResource("/img/home.png")));
 		changeVoice = new JButton("Change Voice",new ImageIcon(Quiz.class.getResource("/img/voice.png")));
@@ -478,7 +522,7 @@ public class Quiz extends JPanel{
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					NumberGame newGame = new NumberGame();
+					WordGame newGame = new WordGame(words);
 					newGame.start();
 					Reward.setEnabled(false);
 					dialog.setVisible(false);
@@ -521,22 +565,7 @@ public class Quiz extends JPanel{
 			});
 			
 		}
-
-		JPanel panel = new JPanel(new BorderLayout());
-		panel.setBackground(new Color(220,221,225));
-		JPanel options = new JPanel();
-
-		JScrollPane scroll = new JScrollPane(output);
-
-		input.setPreferredSize(new Dimension(250, 30));
-		submit.setEnabled(false);
-
-		JPanel quizOptions = new JPanel();
-		quizOptions.setBackground(new Color(220,221,225));
-		options.setBackground(new Color(220,221,225));
 		
-		quizOptions.add(submit);
-
 		// Plays the word once more once clicked
 		repeat.addActionListener(new ActionListener() {
 
@@ -550,38 +579,7 @@ public class Quiz extends JPanel{
 			}
 
 		});
-
-		repeat.setEnabled(false);
 		
-		quizOptions.add(repeat);
-		panel.add(input, BorderLayout.CENTER);
-		panel.add(quizOptions, BorderLayout.EAST);
-		options.add(close, JPanel.LEFT_ALIGNMENT);
-		options.add(changeVoice);
-		options.add(restart, JPanel.RIGHT_ALIGNMENT);
-		
-		// If the quiz type is quiz, then the user's stats for the level are shown
-		// Original code by David
-		// If the quiz type is quiz, then the options for the quiz include a next level button and
-		// video reward button
-		// by Hunter
-		if (_type == quizType.QUIZ) {
-			panel.add(levelStats, BorderLayout.NORTH);
-			options.add(nextLevel);
-			options.add(Reward);
-		}
-
-		nextLevel.setEnabled(false);
-		Reward.setEnabled(false);
-		restart.setEnabled(false);
-
-		add(panel, BorderLayout.NORTH);
-		add(scroll, BorderLayout.CENTER);
-		add(options, BorderLayout.SOUTH);
-
-		// Sets the submit button as the default one so that the enter button can be used to submit
-		frame.getRootPane().setDefaultButton(submit);
-
 	}
 
 	/**
@@ -651,5 +649,9 @@ public class Quiz extends JPanel{
 	
 	public boolean isQuizFinished(){
 		return _finished;
+	}
+	
+	public boolean isLevelEmpty(){
+		return _emptyLevel;
 	}
 }

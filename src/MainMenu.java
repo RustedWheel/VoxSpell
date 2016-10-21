@@ -66,12 +66,56 @@ public class MainMenu extends JPanel {
 		/*welcomeScreen.setBackground(new Color(248, 248, 255));*/
 		welcomeScreen.setBackground(new Color(255, 255, 255));
 		
-		if(frame.getFilePath()==null){
+		if(frame.getFilePath() == null){
 			updateSelectLevel(_defaultFile);
 		} else {
 			updateSelectLevel(frame.getFilePath());
+			_filePath = frame.getFilePath();
 		}
+		
+		setUpActionListeners();
+		
+		menu.add(quiz);
+		menu.add(review);
+		menu.add(statistics);
+		menu.add(clear);
+		menu.setBackground(new Color(220,221,225));
+		JPanel options = new JPanel();
+		options.setBackground(new Color(220,221,225));
 
+		welcomeScreen.setLayout(new BorderLayout(0, 0));
+		
+		//Creates the VoxSpekk logo
+		JLabel logoLabel = new JLabel();
+		logoLabel.setBounds(0, 21, 540, 300);
+		welcomeScreen.add(logoLabel, BorderLayout.CENTER);
+		ImageIcon oldLogo = new ImageIcon(MainMenu.class.getResource("/img/VoxSpell.png"));
+		Image img = oldLogo.getImage();
+		Image logo = img.getScaledInstance(logoLabel.getWidth(), logoLabel.getHeight(), Image.SCALE_SMOOTH);
+		ImageIcon newLogo = new ImageIcon(logo);
+		logoLabel.setIcon(newLogo);
+		
+		JLabel Welcome = new JLabel("Welcome to the VoxSpell Spelling Aid!");
+	    Welcome.setBounds(54, 182, 294, 18);
+		Welcome.setHorizontalAlignment(SwingConstants.CENTER);
+		Welcome.setFont(new Font("SansSerif", Font.PLAIN, 15));
+		/*getContentPane().add(Welcome);*/
+		welcomeScreen.add(Welcome, BorderLayout.SOUTH);
+		
+		options.add(btnHelp);
+		options.add(settings);
+		options.add(exit);
+		setLayout(new BorderLayout());
+		add(welcomeScreen, BorderLayout.NORTH);
+		add(menu, BorderLayout.CENTER);
+		add(options, BorderLayout.SOUTH);
+
+		// Clears the statistics when first started up, so past data is not saved
+		/*clearStatistics();*/
+	}
+	
+	
+	private void setUpActionListeners(){
 		quiz.setFont(new Font("SansSerif", Font.PLAIN, 16));
 
 		quiz.addActionListener(new ActionListener() {
@@ -88,24 +132,17 @@ public class MainMenu extends JPanel {
 					int response = JOptionPane.showConfirmDialog(null, selectLV, "Please select a level", JOptionPane.OK_CANCEL_OPTION);
 
 					if (response == JOptionPane.OK_OPTION) {
-						
-						String file;
-
-						if (_filePath == null) {
-							file = _defaultFile;
-						} else {
-							file = _filePath;
-						}
 
 						// Starts a new quiz and hides the main menu
-						Quiz _quiz = new Quiz(Quiz.quizType.QUIZ, _frame, _level, _maxLevel, file);
+						Quiz _quiz = new Quiz(Quiz.quizType.QUIZ, _frame, _level, _maxLevel, getCurrentList());
 						_quiz.startQuiz();
-						_frame.setTitle("New Spelling Quiz");
-						_frame.getContentPane().removeAll();
-						_frame.getContentPane().add(_quiz);
-						_frame.revalidate();
-						_frame.repaint();
-
+						if(_quiz.isLevelEmpty() == false){
+							_frame.setTitle("New Spelling Quiz");
+							_frame.getContentPane().removeAll();
+							_frame.getContentPane().add(_quiz);
+							_frame.revalidate();
+							_frame.repaint();
+						}
 					}
 
 				}
@@ -130,11 +167,13 @@ public class MainMenu extends JPanel {
 						
 						Quiz _quiz = new Quiz(Quiz.quizType.REVIEW, _frame, _level, _maxLevel, null);
 						_quiz.startQuiz();
+						if(_quiz.isLevelEmpty() == false){
 						_frame.setTitle("Review Mistakes");
 						_frame.getContentPane().removeAll();
 						_frame.getContentPane().add(_quiz);
 						_frame.revalidate();
 						_frame.repaint();
+						}
 					}
 				}
 
@@ -146,15 +185,20 @@ public class MainMenu extends JPanel {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				
+				
+				
 				// Shows the statistics and hides the main menu
-				Statistics _statistics = new Statistics(_frame);
+				Statistics _statistics = new Statistics(_frame, getCurrentList());
 				_statistics.showStats();
-				_frame.setTitle("View Statistics");
-				_frame.getContentPane().removeAll();
-				_frame.setSize(900, 400);
-				_frame.getContentPane().add(_statistics);
-				_frame.revalidate();
-				_frame.repaint();
+				if(_statistics.isEmpty() == false){
+					_frame.setTitle("View Statistics");
+					_frame.getContentPane().removeAll();
+					_frame.setSize(900, 400);
+					_frame.getContentPane().add(_statistics);
+					_frame.revalidate();
+					_frame.repaint();
+				}
 			}
 
 		});
@@ -188,14 +232,6 @@ public class MainMenu extends JPanel {
 		
 		selectVoices = _frame.getSpeaker().getVoiceBox();
 		
-		menu.add(quiz);
-		menu.add(review);
-		menu.add(statistics);
-		menu.add(clear);
-		menu.setBackground(new Color(220,221,225));
-		JPanel options = new JPanel();
-		options.setBackground(new Color(220,221,225));
-
 		exit = new JButton("Exit",new ImageIcon(MainMenu.class.getResource("/img/exit.png")));
 		exit.setFont(new Font("SansSerif", Font.PLAIN, 16));
 		exit.addActionListener(new ActionListener() {
@@ -284,36 +320,8 @@ public class MainMenu extends JPanel {
 				JOptionPane.showMessageDialog(null, "Press \"New Quiz\" to start a new quiz\nPress \"Review\" to review previously failed words\nPress \"View Statistics\" to view your current statistics\nPress \"Clear Statistics\" to clear all current statistics\nPress \"Settings\" to change the text to speech voice or speed or the spelling list", "Help", JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
-		welcomeScreen.setLayout(new BorderLayout(0, 0));
-		
-		//Creates the VoxSpekk logo
-		JLabel logoLabel = new JLabel();
-		logoLabel.setBounds(0, 21, 520, 300);
-		welcomeScreen.add(logoLabel, BorderLayout.CENTER);
-		ImageIcon oldLogo = new ImageIcon(MainMenu.class.getResource("/img/VoxSpell.png"));
-		Image img = oldLogo.getImage();
-		Image logo = img.getScaledInstance(logoLabel.getWidth(), logoLabel.getHeight(), Image.SCALE_SMOOTH);
-		ImageIcon newLogo = new ImageIcon(logo);
-		logoLabel.setIcon(newLogo);
-		
-		JLabel Welcome = new JLabel("Welcome to the VoxSpell Spelling Aid!");
-	    Welcome.setBounds(54, 182, 294, 18);
-		Welcome.setHorizontalAlignment(SwingConstants.CENTER);
-		Welcome.setFont(new Font("SansSerif", Font.PLAIN, 15));
-		/*getContentPane().add(Welcome);*/
-		welcomeScreen.add(Welcome, BorderLayout.SOUTH);
-		
-		options.add(btnHelp);
-		options.add(settings);
-		options.add(exit);
-		setLayout(new BorderLayout());
-		add(welcomeScreen, BorderLayout.NORTH);
-		add(menu, BorderLayout.CENTER);
-		add(options, BorderLayout.SOUTH);
-
-		// Clears the statistics when first started up, so past data is not saved
-		/*clearStatistics();*/
 	}
+	
 
 	/**
 	 * This method deletes the existing results and failed files and then
@@ -321,7 +329,7 @@ public class MainMenu extends JPanel {
 	 * 
 	 * Reused code from A2
 	 */
-	protected void clearStatistics() {
+	private void clearStatistics() {
 
 		File file = new File(".results");
 
@@ -434,5 +442,16 @@ public class MainMenu extends JPanel {
 		
 		// Adds an ActionListener to the JComboBox to extract the level and save it in the _level field
 		reviewLV.addActionListener(selectLV.getActionListeners()[0]);
+	}
+	
+	private String getCurrentList(){
+		String file;
+
+		if (_filePath == null) {
+			file = _defaultFile;
+		} else {
+			file = _filePath;
+		}
+		return file;
 	}
 }

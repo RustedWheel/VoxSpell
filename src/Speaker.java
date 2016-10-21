@@ -44,13 +44,13 @@ public class Speaker {
 		for(String voices : subDirectories){
 			switch (voices) {
 			case "kal_diphone":
-				voices = "CMU US KAL voice";
+				voices = "American voice";
 				break;
 			case "rab_diphone":
-				voices = "CSTR UK RAB voice";
+				voices = "British voice";
 				break;
 			case "akl_nz_jdt_diphone":
-				voices = "Auckland NZ JDT voice";
+				voices = "New Zealand voice";
 				break;
 			}
 			_availableVoices.add(voices);
@@ -124,8 +124,7 @@ public class Speaker {
 				} else if (text.contains("repeat")) {
 					bw.write(_repeatSpeed);
 					bw.newLine();
-					String[] textArray = text.split(" ");
-					text = textArray[1];
+					text = text.replaceAll("repeat", "");
 					
 				} else if (_selectedSpeed != null) {
 					bw.write(_selectedSpeed);
@@ -180,13 +179,13 @@ public class Speaker {
 	public void setVoice(String voice){
 		if(voice != null){
 			switch (voice) {
-			case "CMU US KAL voice":
+			case "American voice":
 				voice = "kal_diphone";
 				break;
-			case "CSTR UK RAB voice":
+			case "British voice":
 				voice = "rab_diphone";
 				break;
-			case "Auckland NZ JDT voice":
+			case "New Zealand voice":
 				voice = "akl_nz_jdt_diphone";
 				break;
 			}

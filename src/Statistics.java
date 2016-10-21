@@ -52,31 +52,12 @@ public class Statistics extends JPanel {
 	private HashMap<Integer, ArrayList<Integer>> scores = new HashMap<Integer, ArrayList<Integer>>();
 	private ChartPanel chartPanel = null;
 	private FileContentReader reader = new FileContentReader();
+	private String _spellingList;
 
-	public Statistics(Gui frame) {
+	public Statistics(Gui frame, String spellingList) {
 		_frame = frame;
+		_spellingList = spellingList;
 		setLayout(new BorderLayout());
-		close = new JButton("Main Menu",new ImageIcon(Statistics.class.getResource("/img/home.png")));
-		statDetail = new JButton("Graphical feedback",new ImageIcon(Statistics.class.getResource("/img/graph.png")));
-		statDetail.setEnabled(false);
-		statDetail.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-
-				int row = table.getSelectedRow();
-				int level = (int) table.getValueAt(row, 0);
-
-				Integer[] levelStats = stats.get(level);
-				ArrayList<Integer> levelScores = scores.get(level);
-				ArrayList<String> failedWords =  reader.readFailed(level);
-				graphFeedback feedback = new graphFeedback(levelStats, levelScores,failedWords);
-				feedback.setVisible(true);
-
-			}
-
-		});
-
 	}
 
 	/**
@@ -87,32 +68,21 @@ public class Statistics extends JPanel {
 		calculateStats();
 
 		if (table != null) {
-
-			// Disposes the JFrame and unhides the main menu once the "Main
-			// Menu" button is pressed
-			close.addActionListener(new ActionListener() {
-
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					_frame.getContentPane().removeAll();
-					_frame.setTitle("VoXSpell");
-					MainMenu menu = new MainMenu(_frame);
-					_frame.setSize(550, 575);
-					_frame.getContentPane().add(menu);
-					_frame.revalidate();
-					_frame.repaint();
-				}
-
-			});
-
+			setUpButtons();
 			JPanel options = new JPanel();
 			options.setBackground(new Color(220,221,225));
 			options.setLayout(new FlowLayout(FlowLayout.LEFT));
 			JLabel highestScore = new JLabel();
-			highestScore.setText("	Personal highest score: " + df.format(highest));
+			JLabel spellingList = new JLabel(" " + " Spelling list: " +  _spellingList);
+			Font font = highestScore.getFont();
+			Font boldFont = new Font(font.getFontName(), Font.BOLD, font.getSize());
+			highestScore.setFont(boldFont);
+			spellingList.setFont(boldFont);
+			highestScore.setText(" Personal highest score: " + df.format(highest) + "	");
 			options.add(close);
 			options.add(statDetail);
 			options.add(highestScore);
+			options.add(spellingList);
 
 			// Adds the JTable to a JScrollPane to allow for scrolling and for
 			// headers to show up
@@ -140,7 +110,7 @@ public class Statistics extends JPanel {
 
 		// Displays an error message if there are no statistics to be shown
 		if (results.size() == 0) {
-			JOptionPane.showMessageDialog(new JFrame(), "Error, no results saved", "Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(new JFrame(), "Error, no results saved", "Error", JOptionPane.ERROR_MESSAGE);			
 		} else {
 			// array representing passed, failed and total score and highest score
 			ArrayList<Integer> levels = new ArrayList<Integer>();
@@ -268,7 +238,7 @@ public class Statistics extends JPanel {
 		plot.setBackgroundPaint(background);
 		plot.setRangeGridlinePaint(grid);
 		NumberAxis yAxis = (NumberAxis) plot.getRangeAxis();
-		yAxis.setRange(0.0,10.0);
+		yAxis.setRange(0.0,10.5);
 		yAxis.setTickUnit(new NumberTickUnit(1.0));
 
 		return chart;
@@ -284,7 +254,7 @@ public class Statistics extends JPanel {
 		return dataset;
 	}
 
-	public class Model extends DefaultTableModel {
+	private class Model extends DefaultTableModel {
 
 		//Creates the table model to disallow editing
 		Model(Object[][] data, String[] column) {
@@ -295,6 +265,56 @@ public class Statistics extends JPanel {
 		public boolean isCellEditable(int row, int column) {
 			return false;
 		}
+	}
+	
+	public boolean isEmpty(){
+		boolean isEmpty = false;
+		if(table == null){
+			isEmpty = true;
+		}
+		return isEmpty;
+	}
+	
+	private void setUpButtons(){
+		close = new JButton("Main Menu",new ImageIcon(Statistics.class.getResource("/img/home.png")));
+		statDetail = new JButton("Graphical feedback",new ImageIcon(Statistics.class.getResource("/img/graph.png")));
+		statDetail.setEnabled(false);
+		statDetail.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+
+				int row = table.getSelectedRow();
+				int level = (int) table.getValueAt(row, 0);
+
+				Integer[] levelStats = stats.get(level);
+				ArrayList<Integer> levelScores = scores.get(level);
+				ArrayList<String> failedWords =  reader.readFailed(level);
+				graphFeedback feedback = new graphFeedback(levelStats, levelScores,failedWords);
+				feedback.setVisible(true);
+
+			}
+
+		});
+		
+		// Disposes the JFrame and unhides the main menu once the "Main
+		// Menu" button is pressed
+		close.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				_frame.getContentPane().removeAll();
+				_frame.setTitle("VoXSpell");
+				MainMenu menu = new MainMenu(_frame);
+				_frame.setSize(550, 575);
+				_frame.getContentPane().add(menu);
+				_frame.revalidate();
+				_frame.repaint();
+			}
+
+		});
+		
+		
 	}
 
 }

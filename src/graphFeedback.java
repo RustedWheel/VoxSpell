@@ -139,7 +139,7 @@ public class graphFeedback extends JDialog {
 		plot.setRangeGridlinePaint(new Color(112, 128, 144, 255));
 		renderer.setBaseShapesVisible(true);
 		NumberAxis yAxis = (NumberAxis) plot.getRangeAxis();
-		yAxis.setRange(0.0,10.0);
+		yAxis.setRange(0.0,10.5);
 		yAxis.setTickUnit(new NumberTickUnit(1.0));
 		
 		
@@ -215,7 +215,7 @@ public class graphFeedback extends JDialog {
 		plot.setRangeGridlinePaint(grid);
 		chart.setBackgroundPaint(new Color(240, 240, 240, 255));
 		NumberAxis yAxis = (NumberAxis) plot.getRangeAxis();
-		yAxis.setRange(0.0,10.0);
+		yAxis.setRange(0.0,10.5);
 		yAxis.setTickUnit(new NumberTickUnit(1.0));
 
 		return chart;

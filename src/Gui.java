@@ -93,20 +93,6 @@ public class Gui extends JFrame{
 		return speaker;
 	}
 	
-/*	public void startBGMusic(){
-	    AudioPlayer myBackgroundPlayer = AudioPlayer.player;
-	    ContinuousAudioDataStream myLoop = null;
-	    try {
-	    	AudioStream myBackgroundMusic = new AudioStream(getClass().getResourceAsStream("bgm.mp3"));
-	          AudioData myData = myBackgroundMusic.getData();
-	          myLoop = new ContinuousAudioDataStream(myData);
-	    }catch(Exception error){
-	        System.out.println("File Not Found");
-	        System.out.println(error);
-	    }
-	    myBackgroundPlayer.start(myLoop);  
-	}*/
-	
 	public static void main(String[] Args) {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
@@ -115,8 +101,6 @@ public class Gui extends JFrame{
 				frame.setResizable(false);
 				try {
 					UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
-					/*"com.sun.java.swing.plaf.gtk.GTKLookAndFeel"*/
-					/*"com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel"*/
 					SwingUtilities.updateComponentTreeUI(frame);
 				} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
 						| UnsupportedLookAndFeelException e) {

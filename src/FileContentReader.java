@@ -113,7 +113,6 @@ public class FileContentReader {
 				if(Integer.parseInt(word[1]) == level){
 					failedWords.add(word[0]);
 				}
-				line = br.readLine();
 			}
 
 			br.close();
